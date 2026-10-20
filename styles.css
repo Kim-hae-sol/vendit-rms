@@ -1474,6 +1474,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .calendar-recommendation-mark { z-index: 1; width: 24px; height: 24px; display: grid; place-items: center; margin-top: 11px; border-radius: 50%; color: #fff; background: #e03131; font-size: 13px; line-height: 1; font-weight: 800; }
 .calendar-recommendation-row.down .calendar-recommendation-mark { background: #1d5fd8; }
 .calendar-recommendation-row.same .calendar-recommendation-mark { background: #737e8e; }
+.calendar-recommendation-row.direct .calendar-recommendation-mark { background: #b75a06; }
 .calendar-recommendation-row.applied .calendar-recommendation-mark { background: #168451; }
 .calendar-recommendation { min-width: 0; margin: 0; padding: 11px 13px; border: 1px solid #ffd0d0; border-radius: 13px; background: #fff9f9; }
 .calendar-recommendation.down { border-color: #d5e1ff; background: #f8faff; }
@@ -1511,8 +1512,10 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .calendar-own-price-line { position: absolute; z-index: 1; top: 0; bottom: -4px; left: var(--price-position); border-left: 1px dashed #17223a; }
 .calendar-own-price-line span { position: absolute; top: -8px; left: 50%; transform: translate(-50%, -100%); padding: 3px 5px; border-radius: 4px; color: white; background: #17223a; font-size: 8px; white-space: nowrap; }
 .calendar-direct-edit { margin: 10px 0 0 37px; padding: 12px; border: 1px solid #ffab21; border-radius: 13px; background: #fffdfa; }
+.calendar-recommendation-row.direct .calendar-direct-edit { margin: 0; }
 .calendar-direct-edit > header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
 .calendar-direct-edit > header strong { color: #263247; font-size: 12px; }
+.calendar-direct-recommendation { color: #8993a2; font-size: 9px; white-space: nowrap; }
 .calendar-direct-edit > header button { padding: 0; border: 0; color: #858f9f; background: transparent; font-size: 9px; cursor: pointer; }
 .calendar-direct-edit > label { height: 48px; display: flex; align-items: center; padding: 0 12px; border: 2px solid #ff9d00; border-radius: 10px; background: #fff; }
 .calendar-direct-edit input { width: 100%; min-width: 0; border: 0; outline: 0; color: #182033; font-size: 21px; font-weight: 800; }
@@ -1523,7 +1526,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .calendar-price-warning { margin: 8px 0 0; color: #b75a06; font-size: 9px; line-height: 1.4; }
 .calendar-drawer-footer { flex: 0 0 auto; padding: 12px 22px 10px; border-top: 1px solid #e8ebf0; background: #fff; }
 .calendar-drawer-footer > div { display: grid; grid-template-columns: 1fr 1.7fr; gap: 8px; }
-.calendar-drawer-footer > div.direct-editing { grid-template-columns: 1fr; }
+.calendar-drawer-footer > div.direct-editing { grid-template-columns: 1fr 1.7fr; }
 .calendar-drawer-footer .secondary-button, .calendar-drawer-footer .primary-button { min-height: 43px; font-size: 12px; }
 .calendar-drawer-footer .primary-button:disabled { border-color: #f0f2f5; color: #aab2bf; background: #f0f2f5; cursor: default; }
 .calendar-drawer-footer .primary-button.custom { border-color: #b75a06; background: #b75a06; }
