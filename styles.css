@@ -1398,7 +1398,9 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .calendar-week-price > strong { min-width: 0; display: flex; align-items: center; gap: 4px; color: #e03131; font-size: 15px; line-height: 1; font-weight: 800; white-space: nowrap; }
 .calendar-week-price > strong i { padding: 3px 4px; border-radius: 4px; color: #e03131; background: #fff0f0; font-size: 8px; font-style: normal; }
 .calendar-week-price > strong.same { color: #344054; }
-.calendar-week-price > strong.same i { color: #7f8998; background: #eef0f4; }
+.calendar-week-price > strong.down i { color: #1d5fd8; background: #eaf1ff; }
+.calendar-week-price > strong.same i { color: #8791a0; background: #f0f2f5; }
+.calendar-week-price > strong.applied i { color: #168451; background: #eaf8f0; }
 .calendar-week-price > span { padding: 4px 6px; border-radius: 6px; color: #8892a2; background: #f1f3f6; font-size: 9px; }
 .calendar-week-price > span b { color: #526071; }
 .calendar-week-price > em { position: absolute; top: 6px; right: 6px; color: #929baa; font-size: 8px; font-style: normal; }
