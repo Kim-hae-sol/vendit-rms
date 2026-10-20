@@ -467,6 +467,14 @@ function ensureMappingRoom(roomId) {
   state.mappingByRoom[roomId] = next;
   return next;
 }
+function resetMappingRoomToRecommendations(roomId) {
+  const mapping = ensureMappingRoom(roomId);
+  const rows = occupancyRanges();
+  for (const category of MAPPING_CATEGORIES) {
+    mapping[category] = rows.map((_, index) => recommendedMappingKey(category, index));
+  }
+  return mapping;
+}
 function mappingOption(key) {
   return mappingStageOptions().find((option) => option.key === key) || { key: 'base', name: '기준가', percent: 0 };
 }
@@ -536,7 +544,7 @@ function mappingContent() {
     { id: 'peak', title: '성수기', picker: mappingSeasonPicker('peak', '성수기') },
   ];
   return `<section class="question-card mapping-card">
-    <div class="mapping-toolbar"><label class="mapping-room-select"><span>객실 종류</span><select data-mapping-room>${rooms.map((item) => `<option value="${esc(item.id)}" ${item.id === state.selectedMappingRoomId ? 'selected' : ''}>${esc(item.name)}　추천값</option>`).join('')}</select><i>⌄</i></label></div>
+    <div class="mapping-toolbar"><label class="mapping-room-select"><span>객실 종류</span><select data-mapping-room>${rooms.map((item) => `<option value="${esc(item.id)}" ${item.id === state.selectedMappingRoomId ? 'selected' : ''}>${esc(item.name)}　추천값</option>`).join('')}</select><i>⌄</i></label><button class="secondary-button mapping-reset-button" data-mapping-reset>${icons.refresh}<span>추천값으로 되돌리기</span></button></div>
     <div class="mapping-grid-wrap"><div class="mapping-grid">
       <div class="mapping-column-heading mapping-occupancy-heading"><strong>판매 상황</strong><span>전체 ${roomTotal()}실 기준 <button data-mapping-edit-ranges>구간 수정</button></span></div>
       ${columns.map((column) => `<div class="mapping-column-heading ${mappingOpenCell?.category === column.id ? 'active-column' : ''}"><strong>${column.title}</strong>${column.subtitle ? `<span class="mapping-column-chip">${esc(column.subtitle)}</span>` : column.picker}</div>`).join('')}
@@ -1850,6 +1858,14 @@ app.addEventListener('click', (event) => {
       ? `${property.name} 데모 숙소를 선택했어요. 객실 샘플 데이터를 사용해요.`
       : `${property.name}이 선택되어 있어요.`);
     return;
+  }
+  if (event.target.closest('[data-mapping-reset]')) {
+    const room = state.rooms.find((item) => item.id === state.selectedMappingRoomId);
+    if (!room) return;
+    resetMappingRoomToRecommendations(room.id);
+    mappingOpenCell = null;
+    mappingOpenSeasonCategory = '';
+    save(); render(); showToast(`${room.name}의 상황별 가격을 추천값으로 되돌렸어요.`); return;
   }
   const mapCell = event.target.closest('[data-map-cell]');
   if (mapCell) {
