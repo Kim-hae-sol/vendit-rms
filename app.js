@@ -783,7 +783,10 @@ function marketSearchResults() {
 function marketTypeLabel(type) { return ({ hotel: '호텔', motel: '모텔', guesthouse: '게스트하우스' })[type] || '숙소'; }
 function marketSummary() {
   const selected = COMPETITORS.filter((item) => state.marketComparedIds.includes(item.id)).map(marketCompetitorRoom).filter(Boolean);
-  const average = selected.length ? Math.round(selected.reduce((sum, item) => sum + item.today, 0) / selected.length / 1000) * 1000 : 0;
+  const totalRooms = selected.reduce((sum, item) => sum + item.roomCount, 0);
+  const average = totalRooms
+    ? Math.round(selected.reduce((sum, item) => sum + item.today * item.roomCount, 0) / totalRooms / 1000) * 1000
+    : 0;
   const own = marketOwnPrice();
   const gap = average ? Math.round(Math.abs(average - own) / average * 100) : 0;
   const comparison = average === 0 ? '선택한 숙소의 가격 정보를 모으면 비교해요.'
