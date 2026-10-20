@@ -1010,13 +1010,21 @@ function calendarMatrixMarkup(info) {
   const mapping = ensureMappingRoom(info.room.id);
   const categories = ['weekday', 'weekend', 'shoulder', 'peak'];
   const labels = ['평일', '주말', '준성수기', '성수기'];
+  const weekdayOption = mappingOption(mapping.weekday?.[info.range.index] || 'base');
+  const stepExplanation = info.chosen.category === 'weekday'
+    ? '평일에 설정한 가격 단계를 적용했어요.'
+    : info.chosen.option.percent > weekdayOption.percent
+      ? `평일에 적용하는 ${weekdayOption.name}보다 높은 단계를 적용했어요.`
+      : info.chosen.option.percent < weekdayOption.percent
+        ? `평일에 적용하는 ${weekdayOption.name}보다 낮은 단계를 적용했어요.`
+        : '평일과 같은 가격 단계를 적용했어요.';
   const rows = occupancyRanges().filter((range) => calendarMatrixExpanded || range.index === info.range.index).map((range) => `<div class="calendar-matrix-row ${range.index === info.range.index ? 'current' : ''}"><b>${range.letter}</b><small>${range.lowerPercent}~${range.upperPercent}%</small>${categories.map((category) => {
     const key = mapping[category]?.[range.index] || 'base'; const option = mappingOption(key); const color = priceStageColor(option.percent);
     const chosen = info.range.index === range.index && info.chosen.category === category;
     const chosenTone = chosen ? info.chosen.option.percent < 0 ? 'chosen-down' : info.chosen.option.percent > 0 ? 'chosen-up' : 'chosen-base' : '';
-    return `<span class="${color} ${chosen ? `chosen ${chosenTone}` : ''}">${option.name.replace('단계', '')}</span>`;
+    return `<span class="${color} ${chosen ? `chosen ${chosenTone}` : ''}">${option.name}</span>`;
   }).join('')}</div>`).join('');
-  return `<div class="calendar-matrix"><div class="calendar-matrix-head"><span></span><span></span>${labels.map((label) => `<span>${label}</span>`).join('')}</div>${rows}<div class="calendar-matrix-foot"><span><i class="down"></i>내림</span><span><i></i>기준가</span><span><i class="up"></i>올림</span><b>오늘은 ${info.range.letter} 구간</b></div><p><strong>${info.range.letter} 구간 × ${info.chosen.label} → ${info.chosen.option.name}</strong> · 가장 높은 적용 가격 단계를 반영해요.</p><button class="calendar-matrix-expand" data-calendar-matrix>${calendarMatrixExpanded ? '접기 ⌃' : '전체 표 보기 ⌄'}</button></div>`;
+  return `<div class="calendar-matrix"><div class="calendar-matrix-head"><span></span><span></span>${labels.map((label) => `<span>${label}</span>`).join('')}</div>${rows}<div class="calendar-matrix-foot"><span><i class="down"></i>내림</span><span><i></i>기준가</span><span><i class="up"></i>올림</span><b>오늘은 ${info.range.letter} 구간</b></div><p><strong>${info.range.letter} 구간 × ${info.chosen.label} → ${info.chosen.option.name}</strong> · ${stepExplanation}</p><button class="calendar-matrix-expand" data-calendar-matrix>${calendarMatrixExpanded ? '접기 ⌃' : '전체 표 보기 ⌄'}</button></div>`;
 }
 function calendarCompetitorAverage() {
   const prices = COMPETITORS.filter((item) => state.marketComparedIds.includes(item.id) && item.today).map((item) => item.today);
