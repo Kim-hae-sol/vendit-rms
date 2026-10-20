@@ -136,13 +136,14 @@ function loadState() {
     const storedMax = Number(saved.maxLimit);
     const storedLimitsValid = Number.isFinite(storedMin) && Number.isFinite(storedMax)
       && storedMin >= MIN_PRICE_LIMIT && storedMin < 0 && storedMax > 0 && storedMax <= MAX_PRICE_LIMIT && storedMin < storedMax;
+    const mappingCompleted = Boolean(saved.mappingCompleted);
     return {
       ...cloneDefaults(),
       ...saved,
       removedRoomIds,
       minLimit: storedLimitsValid ? storedMin : DEFAULT_STATE.minLimit,
       maxLimit: storedLimitsValid ? storedMax : DEFAULT_STATE.maxLimit,
-      view: ['market', 'calendar'].includes(saved.view) ? saved.view : 'pricing',
+      view: ['market', 'calendar'].includes(saved.view) && (saved.view !== 'calendar' || mappingCompleted) ? saved.view : 'pricing',
       calendarMode: saved.calendarMode === 'week' ? 'week' : 'month',
       calendarDate: /^\d{4}-\d{2}-\d{2}$/.test(saved.calendarDate || '') ? saved.calendarDate : DEFAULT_STATE.calendarDate,
       calendarRoomId: typeof saved.calendarRoomId === 'string' ? saved.calendarRoomId : DEFAULT_STATE.calendarRoomId,
@@ -152,7 +153,7 @@ function loadState() {
       step3Unlocked: Boolean(saved.step3Unlocked),
       step4Unlocked: Boolean(saved.step4Unlocked),
       step5Unlocked: Boolean(saved.step5Unlocked),
-      mappingCompleted: Boolean(saved.mappingCompleted),
+      mappingCompleted,
       selectedMappingRoomId: typeof saved.selectedMappingRoomId === 'string' ? saved.selectedMappingRoomId : DEFAULT_STATE.selectedMappingRoomId,
       mappingByRoom: saved.mappingByRoom && typeof saved.mappingByRoom === 'object' ? saved.mappingByRoom : {},
       mappingSeasonSelection: saved.mappingSeasonSelection && typeof saved.mappingSeasonSelection === 'object' ? saved.mappingSeasonSelection : {},
@@ -1124,7 +1125,7 @@ function sidebar(animateStep = false, animateCompletion = false) {
     ${state.mappingCompleted ? `<div class="sidebar-complete-banner ${animateCompletion ? 'complete-enter' : ''}"><span>✓</span><strong>시작하기를 모두 마쳤어요</strong></div>` : '<div class="side-nav-label">설정을 마치면 열려요<br><span>메뉴</span></div>'}` : '<div class="side-nav-label menu-only">메뉴</div>'}
     <nav class="main-nav" aria-label="주 메뉴">
       ${menuItems.map(([icon, label]) => label === '판매 관리'
-        ? `<button class="nav-item ${calendarActive ? 'active' : ''}" data-open-calendar>${icon}<span>${label}</span></button>`
+        ? `<button class="nav-item ${calendarActive ? 'active' : ''}" data-open-calendar ${state.mappingCompleted ? '' : 'disabled aria-disabled="true" title="가격 설정을 완료하면 판매 관리가 열려요."'}>${icon}<span>${label}</span></button>`
         : `<div class="nav-item">${icon}<span>${label}</span></div>`).join('')}
       <button class="nav-item rms-nav-item ${rmsNavActive ? 'active' : ''}" data-rms-menu-toggle aria-expanded="${rmsMenuOpen || rmsNavActive}">${icons.chart}<span>요금 관리 (RMS)</span><i class="nav-chevron">${rmsMenuOpen || rmsNavActive ? '⌃' : '⌄'}</i></button>
       ${rmsMenuOpen || rmsNavActive ? `<div class="rms-submenu" aria-label="요금 관리 (RMS) 메뉴"><button class="rms-submenu-item ${pricingActive ? 'selected' : ''}" data-rms-page="pricing"><i></i><span>가격 설정</span></button><button class="rms-submenu-item ${marketActive ? 'selected' : ''}" data-rms-page="market"><i></i><span>주변 시세</span></button></div>` : ''}
@@ -1659,6 +1660,13 @@ app.addEventListener('click', (event) => {
     return;
   }
   if (event.target.closest('[data-open-calendar]')) {
+    if (!state.mappingCompleted) {
+      state.view = 'pricing';
+      save();
+      render();
+      showToast('판매 관리를 사용하려면 가격 설정을 먼저 마쳐 주세요.');
+      return;
+    }
     state.view = 'calendar'; rmsMenuOpen = false; propertyMenuOpen = false; save(); render(); return;
   }
   if (event.target.closest('[data-calendar-mode]')) {
