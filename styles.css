@@ -249,11 +249,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .drag-grip { display: grid; place-items: center; color: #c4cad4; cursor: grab; }
 .drag-grip svg { width: 13px; height: 15px; stroke: none; fill: currentColor; }
 .stage-swatch { width: 17px; height: 13px; display: inline-block; border-radius: 5px; background: #f2f3f6; }
-.stage-row.up .stage-swatch { background: #f9b9b9; }
-.stage-row.up[data-stage-index="0"] .stage-swatch { background: #f9b9b9; }
-.stage-row.up[data-stage-index="1"] .stage-swatch { background: #ffe0e0; }
-.stage-row.down[data-stage-index="0"] .stage-swatch { background: #e4ecff; }
-.stage-row.down[data-stage-index="1"] .stage-swatch { background: #bfd1ff; }
+.stage-row .stage-swatch { background: var(--stage-swatch-color, #f2f3f6); }
 .stage-row strong { color: var(--blue); font-size: 12px; font-weight: 700; white-space: nowrap; }
 .stage-row.up strong { color: var(--red-dark); }
 .stage-row.down strong { color: var(--blue); }
