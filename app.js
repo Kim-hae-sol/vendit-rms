@@ -1050,9 +1050,20 @@ function calendarDetailDrawer() {
   const seasonReason = calendarReasonCard(2, '시즌', esc(periodLabel), `설정한 시즌 · ${periodLabel}에 해당`, 'season');
   const mappingNumber = 3;
   const mappingCard = `<div class="calendar-reason"><span class="calendar-reason-number">${mappingNumber}</span><article class="calendar-mapping-reason"><div class="calendar-mapping-title"><span><b class="calendar-reason-badge blue">상황별 가격</b><strong>${esc(room.name)}</strong><small>상황별 가격 표에서 이 칸을 썼어요.</small></span><button class="calendar-mapping-menu-button" data-calendar-mapping-menu>•••</button>${calendarMappingMenuOpen ? '<button class="calendar-mapping-menu" data-calendar-edit-mapping>상황별 가격 수정</button>' : ''}</div>${calendarMatrixMarkup(info)}</article></div>`;
-  const priceForCard = calendarDirectEdit ? Number(calendarPriceDraft || info.currentPrice) : info.applied ? info.currentPrice : info.recommended;
+  const priceForCard = calendarDirectEdit
+    ? Number(String(calendarPriceDraft || info.currentPrice).replace(/[^\d]/g, '')) || 0
+    : info.applied ? info.currentPrice : info.recommended;
+  const roomPriceModel = calculatePriceStageModel(
+    info.basePrice,
+    state.minLimit,
+    state.maxLimit,
+    state.up.length,
+    state.down.length,
+    room.id === state.previewRoomId ? state.stagePriceOverrides : {},
+  );
+  const maxAllowedPrice = roomPriceModel.valid ? roomPriceModel.maxPrice : stagePrice(info.basePrice, state.maxLimit);
   const deltaPercent = Math.round((priceForCard / Math.max(1, info.basePrice) - 1) * 100);
-  const directPanel = calendarDirectEdit ? `<div class="calendar-recommendation-row direct"><span class="calendar-recommendation-mark" aria-hidden="true">=</span><section class="calendar-direct-edit"><header><strong>직접 설정한 가격</strong><span class="calendar-direct-recommendation">추천 가격 ${calendarMoney(info.recommended)}원</span></header><label><input data-direct-price value="${esc(calendarPriceDraft || String(info.currentPrice))}" inputmode="numeric" aria-label="직접 설정할 가격"><span>원</span></label><div class="calendar-price-chips">${mappingStageOptions().map((option) => `<button data-calendar-price-chip="${stagePrice(info.basePrice, option.percent)}">${option.name} ${calendarMoney(stagePrice(info.basePrice, option.percent))}</button>`).join('')}</div>${priceForCard > Math.max(info.basePrice, info.recommended) ? `<p class="calendar-price-warning">⚠ 설정한 최고 가격 ${calendarMoney(Math.max(info.basePrice, info.recommended))}원보다 ${calendarMoney(priceForCard - Math.max(info.basePrice, info.recommended))}원 높아요. 이 가격으로도 반영할 수 있어요.</p>` : ''}</section></div>` : '';
+  const directPanel = calendarDirectEdit ? `<div class="calendar-recommendation-row direct"><span class="calendar-recommendation-mark" aria-hidden="true">=</span><section class="calendar-direct-edit"><header><strong>직접 설정한 가격</strong><span class="calendar-direct-recommendation">추천 가격 ${calendarMoney(info.recommended)}원</span></header><label><input data-direct-price value="${esc(calendarPriceDraft || String(info.currentPrice))}" inputmode="numeric" aria-label="직접 설정할 가격"><span>원</span></label><div class="calendar-price-chips">${mappingStageOptions().map((option) => `<button data-calendar-price-chip="${stagePrice(info.basePrice, option.percent)}">${option.name} ${calendarMoney(stagePrice(info.basePrice, option.percent))}</button>`).join('')}</div>${priceForCard > maxAllowedPrice ? `<p class="calendar-price-warning">⚠ 설정한 최고 가격 ${calendarMoney(maxAllowedPrice)}원보다 ${calendarMoney(priceForCard - maxAllowedPrice)}원 높아요. 이 가격으로도 반영할 수 있어요.</p>` : ''}</section></div>` : '';
   const recommendationStatus = calendarStatusClass(info);
   const recommendation = calendarDirectEdit ? '' : `<div class="calendar-recommendation-row ${recommendationStatus}"><span class="calendar-recommendation-mark" aria-hidden="true">=</span><section class="calendar-recommendation ${recommendationStatus}"><header><strong>${info.applied ? '반영한 가격' : '추천 가격'}</strong><b>${info.chosen.option.name} · ${fmtPct(info.chosen.option.percent)}</b></header><div><strong>${calendarMoney(priceForCard)}원</strong><span>현재 ${calendarMoney(info.currentPrice)} <b>${priceForCard - info.currentPrice > 0 ? '+' : ''}${calendarMoney(priceForCard - info.currentPrice)}</b></span></div></section></div>`;
   const hasChange = calendarDirectEdit ? priceForCard !== info.currentPrice : info.recommended !== info.currentPrice;
