@@ -57,6 +57,7 @@ const DEFAULT_STATE = {
   mappingSeasonSelection: {},
   propertyId: 'stay-gangnam',
   occupancyEnds: [30, 50, 70, 85, 100],
+  removedRoomIds: [],
   rooms: [
     { id: 'standard', name: '스탠다드 더블', count: 12, basePrice: 89000 },
     { id: 'deluxe', name: '디럭스 트윈', count: 8, basePrice: 119000 },
@@ -99,10 +100,38 @@ const icons = {
 };
 
 function cloneDefaults() { return structuredClone(DEFAULT_STATE); }
+let roomCatalogMigrationNeeded = false;
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (!saved || !Array.isArray(saved.rooms) || !Array.isArray(saved.up) || !Array.isArray(saved.down)) return cloneDefaults();
+    const removedRoomIds = Array.isArray(saved.removedRoomIds)
+      ? [...new Set(saved.removedRoomIds.map(String))]
+      : [];
+    const savedRooms = (saved.rooms.length ? saved.rooms : cloneDefaults().rooms).map((room, index) => ({
+      id: String(room.id || `room-${index}`),
+      name: String(room.name || `객실 ${index + 1}`),
+      count: Math.max(0, Math.round(Number(room.count) || 0)),
+      basePrice: Math.max(0, Math.round(Number(room.basePrice) || 0)),
+    }));
+    const savedRoomsById = new Map(savedRooms.map((room) => [room.id, room]));
+    const defaultRooms = cloneDefaults().rooms;
+    const defaultRoomIds = new Set(defaultRooms.map((room) => room.id));
+    const removedRoomIdSet = new Set(removedRoomIds);
+    const rooms = [
+      ...defaultRooms
+        .filter((room) => !removedRoomIdSet.has(room.id))
+        .map((room) => {
+          const savedRoom = savedRoomsById.get(room.id);
+          if (!savedRoom) roomCatalogMigrationNeeded = true;
+          return savedRoom || room;
+        }),
+      ...savedRooms.filter((room) => !defaultRoomIds.has(room.id) && !removedRoomIdSet.has(room.id)),
+    ];
+    if (!Array.isArray(saved.removedRoomIds)
+      || rooms.map((room) => room.id).join('|') !== savedRooms.filter((room) => !removedRoomIdSet.has(room.id)).map((room) => room.id).join('|')) {
+      roomCatalogMigrationNeeded = true;
+    }
     const storedMin = Number(saved.minLimit);
     const storedMax = Number(saved.maxLimit);
     const storedLimitsValid = Number.isFinite(storedMin) && Number.isFinite(storedMax)
@@ -110,6 +139,7 @@ function loadState() {
     return {
       ...cloneDefaults(),
       ...saved,
+      removedRoomIds,
       minLimit: storedLimitsValid ? storedMin : DEFAULT_STATE.minLimit,
       maxLimit: storedLimitsValid ? storedMax : DEFAULT_STATE.maxLimit,
       view: ['market', 'calendar'].includes(saved.view) ? saved.view : 'pricing',
@@ -128,12 +158,7 @@ function loadState() {
       mappingSeasonSelection: saved.mappingSeasonSelection && typeof saved.mappingSeasonSelection === 'object' ? saved.mappingSeasonSelection : {},
       occupancyEnds: (Array.isArray(saved.occupancyEnds) ? saved.occupancyEnds : DEFAULT_STATE.occupancyEnds).map(Number).filter(Number.isFinite),
       step: saved.step === 5 && saved.step5Unlocked && saved.step4Unlocked ? 5 : saved.step === 4 && saved.step4Unlocked ? 4 : saved.step === 3 && saved.step3Unlocked ? 3 : saved.step === 2 && saved.step2Unlocked ? 2 : 1,
-      rooms: (saved.rooms.length ? saved.rooms : cloneDefaults().rooms).map((room, index) => ({
-        id: String(room.id || `room-${index}`),
-        name: String(room.name || `객실 ${index + 1}`),
-        count: Math.max(0, Math.round(Number(room.count) || 0)),
-        basePrice: Math.max(0, Math.round(Number(room.basePrice) || 0)),
-      })),
+      rooms,
       up: saved.up.map(Number).filter(Number.isFinite),
       down: saved.down.map(Number).filter(Number.isFinite),
       stagePriceOverrides: saved.stagePriceOverrides && typeof saved.stagePriceOverrides === 'object'
@@ -1988,6 +2013,7 @@ app.addEventListener('click', (event) => {
     if (state.rooms.length <= 1) return;
     const removedId = del.dataset.deleteRoom;
     state.rooms = state.rooms.filter((room) => room.id !== removedId);
+    state.removedRoomIds = [...new Set([...(state.removedRoomIds || []), removedId])];
     if (state.previewRoomId === removedId) {
       state.previewRoomId = state.rooms[0]?.id || '';
       syncPriceStageValues();
@@ -1996,6 +2022,7 @@ app.addEventListener('click', (event) => {
   }
   if (event.target.closest('[data-reload]')) {
     state.rooms = cloneDefaults().rooms;
+    state.removedRoomIds = [];
     state.previewRoomId = state.rooms[0].id;
     syncPriceStageValues();
     save(); render(); showToast('V-CMS 객실 정보를 다시 불러왔어요.'); return;
@@ -2259,6 +2286,9 @@ app.addEventListener('drop', (event) => {
 });
 
 render();
+if (roomCatalogMigrationNeeded) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { /* local storage may be disabled */ }
+}
 
 document.addEventListener('click', (event) => {
   let marketOverlayChanged = false;
