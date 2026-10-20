@@ -35,6 +35,21 @@ const COMPETITORS = [
   { id: 'comp-12', name: '강남 센트럴 모텔', type: 'motel', room: '스탠다드 더블', guests: 2, distance: 2, avg30: 103000, today: 107000, roomCount: 19, mapAngle: 180 },
 ];
 const MARKET_RECOMMENDATION_LIMIT = 5;
+const MARKET_RECOMMENDED_IDS = ['comp-1', 'comp-7', 'comp-2', 'comp-3', 'comp-5'];
+const MARKET_MAP_POSITIONS = {
+  'comp-1': { x: 49, y: 84 },
+  'comp-2': { x: 31, y: 59 },
+  'comp-3': { x: 78, y: 54 },
+  'comp-4': { x: 43, y: 32 },
+  'comp-5': { x: 54, y: 75 },
+  'comp-6': { x: 71, y: 26 },
+  'comp-7': { x: 25, y: 25 },
+  'comp-8': { x: 13, y: 58 },
+  'comp-9': { x: 87, y: 42 },
+  'comp-10': { x: 78, y: 84 },
+  'comp-11': { x: 58, y: 13 },
+  'comp-12': { x: 24, y: 80 },
+};
 if (new URLSearchParams(location.search).has('reset')) {
   try { localStorage.removeItem(STORAGE_KEY); } catch { /* local storage may be unavailable */ }
   try { history.replaceState(null, '', location.pathname); } catch { /* history may be restricted in embedded previews */ }
@@ -80,7 +95,7 @@ const DEFAULT_STATE = {
   marketRoomId: 'double',
   marketRadiusMeters: 2000,
   marketCategory: 'all',
-  marketComparedIds: ['comp-1', 'comp-3', 'comp-7'],
+  marketComparedIds: [...MARKET_RECOMMENDED_IDS],
   marketShowUnmatched: false,
   marketShowAll: false,
   marketZoom: 1,
@@ -134,6 +149,12 @@ function loadState() {
     }
     const storedMin = Number(saved.minLimit);
     const storedMax = Number(saved.maxLimit);
+    const storedMarketIds = Array.isArray(saved.marketComparedIds)
+      ? saved.marketComparedIds.filter((id) => COMPETITORS.some((item) => item.id === id)).slice(0, 5)
+      : null;
+    const legacyRecommendedIds = ['comp-1', 'comp-3', 'comp-7'];
+    const hasLegacyDefaultSelection = storedMarketIds?.length === legacyRecommendedIds.length
+      && legacyRecommendedIds.every((id) => storedMarketIds.includes(id));
     const storedLimitsValid = Number.isFinite(storedMin) && Number.isFinite(storedMax)
       && storedMin >= MIN_PRICE_LIMIT && storedMin < 0 && storedMax > 0 && storedMax <= MAX_PRICE_LIMIT && storedMin < storedMax;
     const mappingCompleted = Boolean(saved.mappingCompleted);
@@ -186,7 +207,7 @@ function loadState() {
       marketRoomId: COMPETITOR_ROOMS.some((room) => room.id === saved.marketRoomId) ? saved.marketRoomId : DEFAULT_STATE.marketRoomId,
       marketRadiusMeters: Math.max(100, Math.min(5000, Math.round(Number(saved.marketRadiusMeters) || 2000))),
       marketCategory: ['all', 'hotel', 'motel', 'guesthouse'].includes(saved.marketCategory) ? saved.marketCategory : 'all',
-      marketComparedIds: Array.isArray(saved.marketComparedIds) ? saved.marketComparedIds.filter((id) => COMPETITORS.some((item) => item.id === id)).slice(0, 5) : [...DEFAULT_STATE.marketComparedIds],
+      marketComparedIds: storedMarketIds ? (hasLegacyDefaultSelection ? [...MARKET_RECOMMENDED_IDS] : storedMarketIds) : [...DEFAULT_STATE.marketComparedIds],
       marketShowUnmatched: Boolean(saved.marketShowUnmatched),
       marketShowAll: Boolean(saved.marketShowAll),
       marketZoom: Math.max(1, Math.min(3, Math.round(Number(saved.marketZoom) || 1))),
@@ -495,10 +516,15 @@ function mappingPriceForRoom(room, key) {
   const index = Number(rawIndex);
   const prices = direction === 'up' ? model.upPrices : model.downPrices;
   if (model.valid && Number.isSafeInteger(prices[index])) return prices[index];
+
   const option = mappingOption(key);
   const rawPrice = stagePrice(basePrice, option.percent);
-  const roundedPrice = direction === 'up' ? Math.floor(rawPrice / 1000) * 1000 : Math.ceil(rawPrice / 1000) * 1000;
-  return model.minPrice > 0 && model.maxPrice > 0 ? Math.min(model.maxPrice, Math.max(model.minPrice, roundedPrice)) : roundedPrice;
+  const roundedPrice = direction === 'up'
+    ? Math.floor(rawPrice / 1000) * 1000
+    : Math.ceil(rawPrice / 1000) * 1000;
+  return model.minPrice > 0 && model.maxPrice > 0
+    ? Math.min(model.maxPrice, Math.max(model.minPrice, roundedPrice))
+    : roundedPrice;
 }
 function mappingLevel(key) {
   if (key === 'base') return '';
@@ -603,6 +629,14 @@ function marketRadiusScale() {
   return Number(Math.max(.05, Math.min(2.5, marketRadiusKm() / 2)).toFixed(2));
 }
 function marketMapPinPosition(item) {
+  const mapPosition = MARKET_MAP_POSITIONS[item.id];
+  if (mapPosition) {
+    const radiusFactor = Math.max(.65, Math.min(1.6, 2 / Math.max(.1, marketRadiusKm())));
+    return {
+      x: Number((55 + (mapPosition.x - 55) * radiusFactor).toFixed(2)),
+      y: Number((57 + (mapPosition.y - 57) * radiusFactor).toFixed(2)),
+    };
+  }
   const angle = (item.mapAngle ?? Math.atan2(item.y - 57, item.x - 55) * 180 / Math.PI) * Math.PI / 180;
   const distanceRatio = item.distance / Math.max(.1, marketRadiusKm());
   // Keep markers at their geographic scale as the search circle grows.
@@ -662,14 +696,13 @@ function syncMarketRadiusPreview() {
   document.querySelectorAll('[data-market-map-pin]').forEach((pin) => {
     const competitor = COMPETITORS.find((item) => item.id === pin.dataset.marketMapPin);
     const outside = !competitor || competitor.distance > marketRadiusKm();
-    const selected = state.marketComparedIds.includes(pin.dataset.marketMapPin);
     if (competitor) {
       const position = marketMapPinPosition(competitor);
       pin.style.left = `${position.x}%`;
       pin.style.top = `${position.y}%`;
     }
-    pin.classList.remove('outside-radius');
-    pin.hidden = outside;
+    pin.classList.toggle('outside-radius', outside);
+    pin.hidden = false;
   });
 }
 function marketRoomCompareCount(room) {
@@ -760,11 +793,14 @@ function marketSummary() {
   return `<div class="market-summary"><div><small>선택</small><strong><b>${state.marketComparedIds.length}곳</b> · 최대 5곳</strong></div><div><small>선택한 숙소 오늘 평균</small><strong>${average ? money(average) : '—'}</strong></div><div><small>내 오늘 가격 · ${esc(marketRoom().name)}</small><strong>${money(own)} <em class="${comparisonClass}">${comparison}</em></strong></div></div>`;
 }
 function marketMap() {
-  const markers = COMPETITORS.map((item) => ({ item, comparisonRoom: marketCompetitorRoom(item) })).filter(({ comparisonRoom, item }) => comparisonRoom && item.distance <= 5).map(({ item, comparisonRoom }) => {
+  const markers = COMPETITORS.filter((item) => item.distance <= 5).map((item) => {
+    const comparisonRoom = marketCompetitorRoom(item);
     const selected = state.marketComparedIds.includes(item.id);
-    const visible = item.distance <= marketRadiusKm();
+    const outsideRadius = item.distance > marketRadiusKm();
     const position = marketMapPinPosition(item);
-    return `<button class="market-map-price ${selected ? 'selected' : ''}" style="left:${position.x}%;top:${position.y}%" data-market-map-pin="${item.id}" ${visible ? '' : 'hidden'} aria-label="${esc(item.name)} ${money(comparisonRoom.today)} ${selected ? '선택됨' : ''}">${money(comparisonRoom.today).replace('원', '')}${selected ? '<i>✓</i>' : ''}</button>`;
+    const priceLabel = comparisonRoom ? money(comparisonRoom.today).replace('원', '') : '정보 없음';
+    const classes = ['market-map-price', selected ? 'selected' : '', outsideRadius ? 'outside-radius' : '', comparisonRoom ? '' : 'unavailable'].filter(Boolean).join(' ');
+    return `<button class="${classes}" style="left:${position.x}%;top:${position.y}%" data-market-map-pin="${item.id}" ${comparisonRoom ? '' : 'disabled'} aria-label="${esc(item.name)} ${comparisonRoom ? money(comparisonRoom.today) : '비교 객실 정보 없음'} ${selected ? '선택됨' : ''}">${priceLabel}${selected ? '<i>✓</i>' : ''}</button>`;
   }).join('');
   const room = marketRoom();
   const own = marketOwnPrice();
@@ -806,7 +842,11 @@ function marketContent() {
   const room = marketRoom();
   const available = marketVisibleList();
   const categoryList = marketCategoryList();
-  const list = state.marketShowAll ? categoryList : available.slice(0, MARKET_RECOMMENDATION_LIMIT);
+  const recommended = MARKET_RECOMMENDED_IDS
+    .map((id) => categoryList.find((item) => item.id === id))
+    .filter((item) => item && available.includes(item));
+  const recommendationCandidates = [...recommended, ...available.filter((item) => !recommended.includes(item))];
+  const list = state.marketShowAll ? categoryList : recommendationCandidates.slice(0, MARKET_RECOMMENDATION_LIMIT);
   const chips = [
     { id: 'all', label: `전체 ${COMPETITORS.length}` },
     { id: 'hotel', label: `호텔 ${COMPETITORS.filter((item) => item.type === 'hotel').length}` },
