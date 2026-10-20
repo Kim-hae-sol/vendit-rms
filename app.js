@@ -1001,7 +1001,7 @@ function calendarToolbar() {
 }
 function calendarContent() {
   if (!state.rooms.some((room) => room.id === state.calendarRoomId)) state.calendarRoomId = state.rooms[0]?.id || '';
-  return `<div class="calendar-page-heading"><h1>가격 관리</h1><p>날짜별 추천 가격을 확인하고 판매 채널에 바로 반영해 주세요. 날짜를 누르면 추천 이유를 확인할 수 있어요.</p></div>${calendarToolbar()}${state.calendarMode === 'month' ? calendarMonthGrid() : calendarWeekGrid()}${calendarDetailOpen ? calendarDetailDrawer() : ''}${calendarApplyConfirmOpen ? calendarApplyDialog() : ''}`;
+  return `<div class="calendar-page-heading"><h1>판매 관리</h1><p>날짜별 추천 가격을 확인하고 판매 채널에 바로 반영해 주세요. 날짜를 누르면 추천 이유를 확인할 수 있어요.</p></div>${calendarToolbar()}${state.calendarMode === 'month' ? calendarMonthGrid() : calendarWeekGrid()}${calendarDetailOpen ? calendarDetailDrawer() : ''}${calendarApplyConfirmOpen ? calendarApplyDialog() : ''}`;
 }
 function calendarReasonCard(number, badge, title, detail, tone = '') {
   return `<div class="calendar-reason"><span class="calendar-reason-number">${number}</span><article><div><b class="calendar-reason-badge ${tone}">${badge}</b><strong>${title}</strong></div><p>${detail}</p></article></div>`;
