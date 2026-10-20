@@ -1196,15 +1196,25 @@ function stageRows(type) {
   return values.map((pct, index) => {
     const name = priceStageName(type, index);
     const price = prices[index] || 0;
+    const swatchColor = stageSwatchColor(type, index, values.length);
     const isCountHighlight = stageCountHighlight?.type === type && stageCountHighlight.index === index;
     const isLimitStage = type === 'up' ? index === 0 : index === values.length - 1;
     const extremeLabel = type === 'up' ? (index === 0 ? '<span class="extreme-badge">최고가</span>' : '<span class="extreme-spacer"></span>') : (index === values.length - 1 ? '<span class="extreme-badge">최저가</span>' : '<span class="extreme-spacer"></span>');
     return `<div class="stage-row ${type}${isCountHighlight ? ' count-highlight' : ''}" draggable="${!isLimitStage}" data-stage-row="${type}" data-stage-index="${index}">
-      <span class="drag-grip" aria-label="단계 순서 바꾸기">${icons.grip}</span><span class="stage-swatch"></span><strong>${name}</strong>${extremeLabel}<span class="stage-price">${money(price)}</span>
+      <span class="drag-grip" aria-label="단계 순서 바꾸기">${icons.grip}</span><span class="stage-swatch" style="--stage-swatch-color:${swatchColor}"></span><strong>${name}</strong>${extremeLabel}<span class="stage-price">${money(price)}</span>
       <label class="percent-input"><input type="number" step="0.1" value="${pct}" aria-label="${name} 변동률" data-stage-pct="${type}" data-index="${index}" ${isLimitStage ? 'readonly' : ''}><span>%</span></label>
       <button class="remove-stage" aria-label="${name} 삭제" data-remove-stage="${type}" data-index="${index}">×</button>
     </div>`;
   }).join('');
+}
+
+function stageSwatchColor(type, index, count) {
+  const pale = type === 'up' ? [255, 224, 224] : [228, 236, 255];
+  const vivid = type === 'up' ? [249, 185, 185] : [191, 209, 255];
+  const intensity = count <= 1 ? 1 : type === 'up'
+    ? (count - 1 - index) / (count - 1)
+    : index / (count - 1);
+  return `#${pale.map((channel, i) => Math.round(channel + (vivid[i] - channel) * intensity).toString(16).padStart(2, '0')).join('')}`;
 }
 
 function rangeNotice() {
