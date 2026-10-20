@@ -1065,7 +1065,7 @@ function calendarDetailDrawer() {
   const deltaPercent = Math.round((priceForCard / Math.max(1, info.basePrice) - 1) * 100);
   const directPriceOptions = mappingStageOptions();
   const directOptionRank = (option) => {
-    const match = option.name.match(/^([+-])(\\d+)단계$/);
+    const match = option.name.match(/^([+-])(\d+)단계$/);
     return match ? (match[1] === '+' ? 1 : -1) * Number(match[2]) : 0;
   };
   const orderedDirectPriceOptions = directPriceOptions.slice().sort((a, b) => directOptionRank(a) - directOptionRank(b));
