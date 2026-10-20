@@ -478,6 +478,28 @@ function resetMappingRoomToRecommendations(roomId) {
 function mappingOption(key) {
   return mappingStageOptions().find((option) => option.key === key) || { key: 'base', name: '기준가', percent: 0 };
 }
+function mappingPriceForRoom(room, key) {
+  const basePrice = Number(room?.basePrice) || 0;
+  if (!basePrice || key === 'base') return basePrice;
+  const model = calculatePriceStageModel(
+    basePrice,
+    state.minLimit,
+    state.maxLimit,
+    state.up.length,
+    state.down.length,
+    room.id === state.previewRoomId ? state.stagePriceOverrides : {},
+  );
+  const match = String(key).match(/^(up|down)-(\d+)$/);
+  if (!match) return basePrice;
+  const [direction, rawIndex] = match.slice(1);
+  const index = Number(rawIndex);
+  const prices = direction === 'up' ? model.upPrices : model.downPrices;
+  if (model.valid && Number.isSafeInteger(prices[index])) return prices[index];
+  const option = mappingOption(key);
+  const rawPrice = stagePrice(basePrice, option.percent);
+  const roundedPrice = direction === 'up' ? Math.floor(rawPrice / 1000) * 1000 : Math.ceil(rawPrice / 1000) * 1000;
+  return model.minPrice > 0 && model.maxPrice > 0 ? Math.min(model.maxPrice, Math.max(model.minPrice, roundedPrice)) : roundedPrice;
+}
 function mappingLevel(key) {
   if (key === 'base') return '';
   const [type, rawIndex] = key.split('-');
@@ -508,10 +530,10 @@ function mappingCellMarkup(category, range, room, mapping) {
     const recommended = recommendedMappingKey(category, range.index) === choice.key;
     const selected = choice.key === key;
     const choiceLevel = mappingLevel(choice.key);
-    return `<button class="mapping-option ${choiceColor} ${choiceLevel} ${selected ? 'selected' : ''}" role="option" aria-selected="${selected}" data-map-choice="${category}|${range.index}|${choice.key}"><span class="mapping-option-swatch ${choiceColor} ${choiceLevel}"></span><strong>${choice.name}</strong><small>${fmtPct(choice.percent)}</small>${recommended ? '<em>추천</em>' : ''}<b>${money(stagePrice(room?.basePrice || 0, choice.percent))}</b>${selected ? '<span class="mapping-option-check">✓</span>' : ''}</button>`;
+    return `<button class="mapping-option ${choiceColor} ${choiceLevel} ${selected ? 'selected' : ''}" role="option" aria-selected="${selected}" data-map-choice="${category}|${range.index}|${choice.key}"><span class="mapping-option-swatch ${choiceColor} ${choiceLevel}"></span><strong>${choice.name}</strong><small>${fmtPct(choice.percent)}</small>${recommended ? '<em>추천</em>' : ''}<b>${money(mappingPriceForRoom(room, choice.key))}</b>${selected ? '<span class="mapping-option-check">✓</span>' : ''}</button>`;
   }).join('');
   const context = `<div class="mapping-option-context"><div class="mapping-option-context-title"><span class="mapping-range-letter tone-${range.index % 5}">${range.letter}</span><strong>${range.startRooms}~${range.endRooms}실 판매</strong><b>+</b><strong>${categoryLabel}</strong></div><small>${esc(room?.name || '객실')}</small></div>`;
-  return `<div class="mapping-cell-wrap ${activeRow ? 'active-row' : ''} ${activeColumn ? 'active-column' : ''} ${active ? 'menu-open' : ''}"><button class="mapping-cell ${color} ${level}" aria-haspopup="listbox" aria-expanded="${active}" data-map-cell="${category}|${range.index}"><strong>${option.name}</strong><span>${money(stagePrice(room?.basePrice || 0, option.percent))}</span><i>⌄</i></button>${active ? `<div class="mapping-option-menu" role="listbox" aria-label="${range.letter} 구간 ${categoryLabel} 가격 단계">${context}${choices}</div>` : ''}</div>`;
+  return `<div class="mapping-cell-wrap ${activeRow ? 'active-row' : ''} ${activeColumn ? 'active-column' : ''} ${active ? 'menu-open' : ''}"><button class="mapping-cell ${color} ${level}" aria-haspopup="listbox" aria-expanded="${active}" data-map-cell="${category}|${range.index}"><strong>${option.name}</strong><span>${money(mappingPriceForRoom(room, key))}</span><i>⌄</i></button>${active ? `<div class="mapping-option-menu" role="listbox" aria-label="${range.letter} 구간 ${categoryLabel} 가격 단계">${context}${choices}</div>` : ''}</div>`;
 }
 function mappingSeasonPicker(category, label) {
   const seasons = activeMappingSeasons(category);
@@ -897,7 +919,7 @@ function calendarPriceInfo(date, room) {
   });
   const chosen = choices.reduce((best, option) => option.option.percent > best.option.percent ? option : best, choices[0]);
   const basePrice = Number(room.basePrice) || 0;
-  const recommended = stagePrice(basePrice, chosen.option.percent);
+  const recommended = mappingPriceForRoom(room, chosen.key);
   const key = `${calendarISO(date)}|${room.id}`;
   const manualPrice = Number(state.calendarManualPrices?.[key]);
   const appliedPrice = Number(state.calendarAppliedPrices?.[key]);
@@ -1063,13 +1085,16 @@ function calendarDetailDrawer() {
   );
   const maxAllowedPrice = roomPriceModel.valid ? roomPriceModel.maxPrice : stagePrice(info.basePrice, state.maxLimit);
   const deltaPercent = Math.round((priceForCard / Math.max(1, info.basePrice) - 1) * 100);
-  const directPriceOptions = mappingStageOptions();
+  const directPriceOptions = mappingStageOptions().map((option) => ({
+    ...option,
+    price: mappingPriceForRoom(room, option.key),
+  }));
   const directOptionRank = (option) => {
     const match = option.name.match(/^([+-])(\d+)단계$/);
     return match ? (match[1] === '+' ? 1 : -1) * Number(match[2]) : 0;
   };
   const orderedDirectPriceOptions = directPriceOptions.slice().sort((a, b) => directOptionRank(a) - directOptionRank(b));
-  const directPanel = calendarDirectEdit ? `<div class="calendar-recommendation-row direct"><span class="calendar-recommendation-mark" aria-hidden="true">=</span><section class="calendar-direct-edit"><header><strong>직접 설정한 가격</strong><span class="calendar-direct-recommendation">추천 가격 ${calendarMoney(info.recommended)}원</span></header><label><input data-direct-price value="${esc(calendarPriceDraft || String(info.currentPrice))}" inputmode="numeric" aria-label="직접 설정할 가격"><span>원</span></label><div class="calendar-price-chips">${orderedDirectPriceOptions.map((option) => `<button data-calendar-price-chip="${stagePrice(info.basePrice, option.percent)}">${option.name} ${calendarMoney(stagePrice(info.basePrice, option.percent))}</button>`).join('')}</div>${priceForCard > maxAllowedPrice ? `<p class="calendar-price-warning">⚠ 설정한 최고 가격 ${calendarMoney(maxAllowedPrice)}원보다 ${calendarMoney(priceForCard - maxAllowedPrice)}원 높아요. 이 가격으로도 반영할 수 있어요.</p>` : ''}</section></div>` : '';
+  const directPanel = calendarDirectEdit ? `<div class="calendar-recommendation-row direct"><span class="calendar-recommendation-mark" aria-hidden="true">=</span><section class="calendar-direct-edit"><header><strong>직접 설정한 가격</strong><span class="calendar-direct-recommendation">추천 가격 ${calendarMoney(info.recommended)}원</span></header><label><input data-direct-price value="${esc(calendarPriceDraft || String(info.currentPrice))}" inputmode="numeric" aria-label="직접 설정할 가격"><span>원</span></label><div class="calendar-price-chips">${orderedDirectPriceOptions.map((option) => `<button data-calendar-price-chip="${option.price}">${option.name} ${calendarMoney(option.price)}</button>`).join('')}</div>${priceForCard > maxAllowedPrice ? `<p class="calendar-price-warning">⚠ 설정한 최고 가격 ${calendarMoney(maxAllowedPrice)}원보다 ${calendarMoney(priceForCard - maxAllowedPrice)}원 높아요. 이 가격으로도 반영할 수 있어요.</p>` : ''}</section></div>` : '';
   const recommendationStatus = calendarStatusClass(info);
   const recommendation = calendarDirectEdit ? '' : `<div class="calendar-recommendation-row ${recommendationStatus}"><span class="calendar-recommendation-mark" aria-hidden="true">=</span><section class="calendar-recommendation ${recommendationStatus}"><header><strong>${info.applied ? '반영한 가격' : '추천 가격'}</strong><b>${info.chosen.option.name} · ${fmtPct(info.chosen.option.percent)}</b></header><div><strong>${calendarMoney(priceForCard)}원</strong><span>현재 ${calendarMoney(info.currentPrice)} <b>${priceForCard - info.currentPrice > 0 ? '+' : ''}${calendarMoney(priceForCard - info.currentPrice)}</b></span></div></section></div>`;
   const hasChange = calendarDirectEdit ? priceForCard !== info.currentPrice : info.recommended !== info.currentPrice;
