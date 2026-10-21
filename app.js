@@ -1557,7 +1557,7 @@ function seasonTimeline() {
     const today = `<span class="season-today-line" style="left:${todayPosition}%"></span>${seasonIndex === state.seasons.length - 1 ? `<span class="season-today-label" style="left:${todayPosition}%">오늘</span>` : ''}`;
     return `<div class="season-row">
       <div class="season-row-info"><input type="checkbox" aria-label="${esc(season.name)} 사용" data-season-toggle="${esc(season.id)}" ${season.active ? 'checked' : ''}><div class="season-row-copy"><div class="season-title-line">${labelButton}<span class="season-type-badge ${seasonTypeClass(season.type)}">${seasonTypeLabel(season.type)}</span></div><small>${seasonPeriodSummary(season)}</small></div></div>
-      <div class="season-track ${season.automatic ? 'automatic' : ''}">${season.automatic ? '<span class="season-auto-note">켜면 해마다 연휴 날짜를 자동으로 맞춰요</span>' : bars}${today}${seasonPopover?.seasonId === season.id ? seasonPopoverMarkup() : ''}</div>
+      <div class="season-track ${season.automatic ? 'automatic' : ''}">${season.automatic ? '<span class="season-auto-note">체크하면 해마다 연휴 날짜를 자동으로 맞춰요</span>' : bars}${today}${seasonPopover?.seasonId === season.id ? seasonPopoverMarkup() : ''}</div>
     </div>`;
   }).join('');
   return `<div class="season-timeline">
