@@ -1249,7 +1249,7 @@ function topbar() {
   const breadcrumbs = state.view === 'calendar'
     ? '<span>요금 관리 (RMS)</span><b>›</b><strong>가격 관리</strong>'
     : state.view === 'market'
-    ? '<span>가격 관리</span><b>›</b><span>설정</span><b>›</b><strong>경쟁 숙소</strong>'
+    ? '<span>가격 관리</span><b>›</b><span>설정</span><b>›</b><strong>주변 시세</strong>'
     : '<span>요금 관리 (RMS)</span><b>›</b><strong>가격 설정</strong>';
   return `<header class="topbar"><div class="breadcrumbs">${breadcrumbs}</div><div class="top-actions"><button class="icon-button notification" aria-label="알림">${icons.bell}<i></i></button><div class="property-switcher"><button class="property-switch" data-property-toggle aria-haspopup="listbox" aria-expanded="${propertyMenuOpen}" aria-controls="property-menu">${esc(property.name)} <span>${propertyMenuOpen ? '⌃' : '⌄'}</span></button>${propertyMenuOpen ? `<div class="property-menu" id="property-menu" role="listbox" aria-label="숙소 선택"><div class="property-menu-heading"><strong>숙소 선택</strong><span>${PROPERTIES.length}곳</span></div>${options}<div class="property-menu-note">데모 숙소는 현재 객실 샘플 데이터를 사용해요.</div></div>` : ''}</div><span class="avatar">김</span><div class="user-name"><strong>김사장님</strong><small>대표</small></div></div></header>`;
 }
