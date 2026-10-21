@@ -571,7 +571,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .mapping-default-info-example > strong { margin-left: auto; color: #182033; font-size: 11px; font-weight: 800; white-space: nowrap; }
 @keyframes mapping-default-info-enter { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 .mapping-room-select { position: relative; display: flex; align-items: center; gap: 12px; color: #a0a9b8; font-size: 12px; }
-.mapping-room-select { position: relative; display: flex; align-items: center; gap: 12px; color: #a0a9b8; font-size: 12px; }
 .mapping-room-select select { width: 260px; height: 42px; appearance: none; padding: 0 42px 0 14px; border: 1px solid var(--border-input); border-radius: 9px; color: #182033; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
 .mapping-room-select i { position: absolute; right: 14px; color: #667085; font-size: 17px; font-style: normal; pointer-events: none; }
 .mapping-grid-wrap { position: relative; overflow: visible; }
@@ -686,9 +685,29 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .mapping-row-label { gap: 7px; padding-left: 4px; }
   .mapping-cell { padding-left: 10px; padding-right: 26px; }
 }
+
+/* Wide, tall desktop: keep content naturally sized inside a fluid reading frame. */
+@media (min-width: 1241px) and (min-height: 1101px) {
+  .sidebar { position: sticky; top: 0; align-self: flex-start; height: 100dvh; min-height: 100dvh; overflow-y: auto; }
+  .page-scroll { width: 100%; max-width: 1984px; min-width: 0; display: flex; flex: 0 0 auto; flex-direction: column; gap: 16px; overflow: visible; margin-inline: auto; padding: 0 32px; }
+  .page-scroll:has(.mapping-card) { max-width: 1984px; }
+  .page-scroll:not(.market-scroll):not(.calendar-scroll) > * { min-width: 0; flex: 0 0 auto; }
+  .main-content > .footer-actions:not(.market-footer),
+  .main-content:has(.mapping-card) > .footer-actions:not(.market-footer),
+  .main-content > .market-footer { width: min(1920px, calc(100% - 64px)); max-width: 1920px; margin-inline: auto; }
+  .page-scroll.market-scroll { max-width: 1984px; gap: 16px; overflow: visible; padding: 20px 32px 12px; }
+  .page-scroll.market-scroll > .market-card { min-height: 700px; flex: 0 0 auto; overflow: visible; }
+  .market-workspace { min-height: 510px; flex: 0 0 auto; }
+  .page-scroll.calendar-scroll { max-width: 1984px; gap: 12px; overflow: visible; padding: 17px 40px 16px; }
+}
+
 @media (max-width: 760px) {
   .mapping-card { padding: 14px 12px; overflow: visible; }
   .mapping-toolbar { align-items: flex-start; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .mapping-default-info-panel { top: 86px; right: 12px; width: calc(100% - 24px); max-width: none; }
+  .mapping-default-info-header { padding: 12px 14px 10px; }
+  .mapping-default-info-body { gap: 11px; padding: 12px 14px 14px; }
+  .mapping-default-info-example { gap: 4px; }
   .mapping-room-select { width: 100%; justify-content: space-between; gap: 7px; }
   .mapping-room-select select { width: min(260px, calc(100% - 74px)); }
   .mapping-grid-wrap { overflow-x: auto; padding-bottom: 4px; }
@@ -1209,6 +1228,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .market-summary strong em.higher, .market-difference.higher { color: #f04444; }
 .market-hint { min-height: 29px; display: flex; align-items: center; gap: 5px; margin: 0; padding: 4px 7px; color: var(--primary); font-size: 10px; font-weight: 600; }
 .market-hint span { font-size: 14px; }
+.market-table-scroll { height: auto; min-height: 0; max-height: 306px; flex: 0 1 auto; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #e1e6ef; border-radius: 12px; scrollbar-width: thin; scrollbar-color: #d4dbe7 transparent; }
+.market-list-panel { align-self: start; }
 .market-table-scroll.market-results-refresh, .market-map-canvas.market-results-refresh { animation: market-results-enter .24s ease-out both; }
 @keyframes market-results-enter { from { opacity: .55; } to { opacity: 1; } }
 .market-table { width: 100%; flex: 0 0 auto; border-collapse: separate; border-spacing: 0; table-layout: fixed; text-align: left; }
@@ -1328,6 +1349,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .market-intro { flex: 0 0 auto; }
   .market-card { flex: 0 0 auto; min-height: 700px; }
   .market-workspace { min-height: 510px; flex: 0 0 auto; }
+  .market-table-scroll { height: auto; max-height: 306px; flex: 0 1 auto; overflow-x: hidden; overflow-y: auto; }
   .market-map-canvas { min-height: 0; }
   .market-footer { flex: 0 0 58px; }
 }
@@ -1422,11 +1444,11 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .calendar-week-label { display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 13px; background: #fff; }
 .calendar-week-label strong { color: #202a3a; font-size: 12px; font-weight: 800; }
 .calendar-week-label small { color: #98a1af; font-size: 9px; }
-.calendar-week-occupancy { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 8px 10px; border: 0; color: #657084; background: #fafbfc; text-align: left; cursor: pointer; }
+.calendar-week-occupancy { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 7px; padding: 8px 10px; border: 0; border-right: 1px solid #e5e8ef; border-bottom: 1px solid #e5e8ef; color: #657084; background: #fafbfc; text-align: left; cursor: pointer; }
 .calendar-week-occupancy b { padding: 4px 7px; border-radius: 6px; color: #596579; background: #f0f2f5; font-size: 11px; }
 .calendar-week-occupancy small { color: #9aa3b2; font-size: 9px; }
 .calendar-week-occupancy.selected { background: #f2f6ff; }
-.calendar-week-price { position: relative; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px; padding: 7px 8px; border: 0; color: #344054; background: #fff; text-align: left; cursor: pointer; }
+.calendar-week-price { position: relative; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px; padding: 7px 8px; border: 0; border-right: 1px solid #e5e8ef; border-bottom: 1px solid #e5e8ef; color: #344054; background: #fff; text-align: left; cursor: pointer; }
 .calendar-week-price:hover, .calendar-week-price.selected { background: #f5f8ff; box-shadow: inset 0 0 0 2px #aabfff; }
 .calendar-week-price > small { overflow: hidden; color: #a1aab8; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .calendar-week-price > strong { min-width: 0; display: flex; align-items: center; gap: 4px; color: #e03131; font-size: 15px; line-height: 1; font-weight: 800; white-space: nowrap; }
@@ -1604,9 +1626,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .calendar-day-cell { gap: 2px; padding: 7px 8px 6px; }
   .calendar-price-line strong { font-size: 16px; }
   .calendar-metrics { margin-top: 2px; padding: 4px 6px; }
-  .calendar-week-grid { grid-template-rows: 50px minmax(62px, .68fr) repeat(var(--calendar-room-rows, 3), minmax(92px, 1fr)); }
-  .calendar-main > .week-board { flex: 0 0 540px; }
-}
+  }
 @media (max-width: 1240px) {
   .calendar-legend { flex-wrap: wrap; justify-content: flex-end; gap: 7px; font-size: 9px; }
   .calendar-legend i { width: 18px; height: 17px; }
@@ -1672,7 +1692,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .market-intro { min-height: 146px; flex: 0 0 146px; }
   .market-card { min-height: 0; flex: 1 1 0; overflow: hidden; }
   .market-workspace { min-height: 0; flex: 1 1 0; overflow: hidden; }
-  .market-list-panel { min-height: 0; overflow: hidden; }
 }
 
 /* Fixed desktop frame with screen-local overflow for 1440px and wider displays. */
@@ -1685,25 +1704,11 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .topbar { position: relative; height: 60px; min-height: 60px; flex: 0 0 60px; }
   .main-content { width: 100%; height: calc(100dvh - 60px); min-width: 0; min-height: 0; flex: 1 1 0; display: flex; flex-direction: column; gap: 0; overflow: hidden; padding: 0; }
 
-  .page-scroll { width: 100%; max-width: 1560px; min-width: 0; min-height: 0; display: flex; flex: 1 1 0; flex-direction: column; gap: 12px; overflow: hidden; margin-inline: auto; padding: 18px 32px 12px; }
+  .page-scroll { width: 100%; max-width: 1560px; min-width: 0; min-height: 0; display: flex; flex: 1 1 0; flex-direction: column; gap: 12px; overflow-x: hidden; overflow-y: auto; margin-inline: auto; padding: 18px 32px 12px; }
   .page-scroll:has(.mapping-card) { max-width: 1600px; padding-top: 24px; }
   .page-scroll:not(.market-scroll):not(.calendar-scroll) > * { min-width: 0; flex: 0 0 auto; }
   .main-content > .footer-actions:not(.market-footer) { width: min(1496px, calc(100% - 64px)); max-width: 1496px; height: 58px; min-height: 58px; flex: 0 0 58px; margin: 0 auto 14px; padding: 7px 16px; }
   .main-content:has(.mapping-card) > .footer-actions:not(.market-footer) { width: min(1536px, calc(100% - 64px)); max-width: 1536px; }
-
-  .page-scroll:has(.room-card) > .room-card,
-  .page-scroll:has(.occupancy-card) > .occupancy-card,
-  .page-scroll:has(.mapping-card) > .mapping-card { min-height: 0; flex: 1 1 0; }
-  .page-scroll:has(.room-card) > .room-card { display: flex; flex-direction: column; overflow: hidden; }
-  .room-card .table-wrap { min-height: 0; flex: 1 1 auto; overflow: auto; }
-  .page-scroll:has(.q2-card) > .q1-card { flex: 0 0 auto; }
-  .page-scroll:has(.q2-card) > .q2-card { min-height: 0; display: flex; flex: 1 1 0; flex-direction: column; overflow: hidden; }
-  .stage-workspace { min-height: 0; flex: 1 1 0; }
-  .stage-editor { min-height: 0; overflow: auto; }
-  .page-scroll:has(.occupancy-card) > .occupancy-card { overflow: auto; }
-  .page-scroll:has(.season-card) > .season-card { min-height: 0; flex: 1 1 0; overflow: auto; }
-  .page-scroll:has(.season-card) > .season-weekdays-card { flex: 0 0 auto; }
-  .page-scroll:has(.mapping-card) > .mapping-card { overflow: auto; }
 
   .page-scroll.market-scroll { max-width: none; gap: 16px; overflow: hidden; padding: 20px 32px 12px; }
   .page-scroll.market-scroll > .market-intro { min-height: 146px; flex: 0 0 146px; }
@@ -1712,7 +1717,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .market-map-column { min-width: 0; min-height: 0; overflow: hidden; }
   .market-map-canvas { height: auto; min-height: 0; flex: 0 1 auto; aspect-ratio: 1.09 / 1; }
   .market-map-legend, .market-footnote { flex: 0 0 auto; }
-  .market-list-panel { min-height: 0; overflow: hidden; }
   .main-content > .market-footer { width: calc(100% - 64px); height: 58px; min-height: 58px; flex: 0 0 58px; margin: 0 32px 14px; padding: 7px 16px; }
 
   .page-scroll.calendar-scroll { max-width: none; gap: 12px; overflow: hidden; padding: 17px 40px 16px; }
@@ -1721,23 +1725,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .page-scroll.calendar-scroll > .calendar-board { min-height: 0; flex: 1 1 0; }
   .calendar-board { min-width: 0; min-height: 0; flex: 1 1 0; overflow: hidden; }
   .calendar-month-grid { min-width: 0; min-height: 0; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: 35px repeat(var(--calendar-rows), minmax(0, 1fr)); }
-  .calendar-week-grid { min-width: 0; min-height: 0; grid-template-columns: minmax(145px, 1.08fr) repeat(7, minmax(0, 1fr)); grid-template-rows: 54px minmax(0, .72fr) repeat(var(--calendar-room-rows, 3), minmax(0, 1fr)); }
+  .calendar-week-grid { min-width: 0; min-height: 0; grid-template-columns: minmax(145px, 1.08fr) repeat(7, minmax(0, 1fr)); grid-template-rows: 54px minmax(62px, .72fr) repeat(var(--calendar-room-rows, 3), minmax(92px, 1fr)); }
   .calendar-detail-drawer { width: 480px; }
 }
 
-@media (max-width: 760px) {
-  .mapping-default-info-panel { top: 86px; right: 12px; width: calc(100% - 24px); max-width: none; }
-  .mapping-default-info-header { padding: 12px 14px 10px; }
-  .mapping-default-info-body { gap: 11px; padding: 12px 14px 14px; }
-  .mapping-default-info-example { gap: 4px; }
-}
-
-
-/* Competitor results: show six rows, then scroll to see the remaining list. */
-.market-list-panel { align-self: start; overflow: visible; }
-.market-table-scroll { height: auto; min-height: 0; max-height: 306px; flex: 0 1 auto; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #e1e6ef; border-radius: 12px; scrollbar-width: thin; scrollbar-color: #d4dbe7 transparent; }
-
-/* Restore week calendar cell separators after interactive buttons reset their borders. */
-.calendar-week-grid > .calendar-week-occupancy,
-.calendar-week-grid > .calendar-week-price { border-right: 1px solid #e5e8ef; border-bottom: 1px solid #e5e8ef; }
-.calendar-week-grid > :nth-child(8n + 1) { border-right: 0; }
