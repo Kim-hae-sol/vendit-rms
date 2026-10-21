@@ -1237,7 +1237,7 @@ function sidebar(animateStep = false, animateCompletion = false) {
         ? `<button class="nav-item ${calendarActive ? 'active' : ''}" data-open-calendar ${state.mappingCompleted ? '' : 'disabled aria-disabled="true" title="가격 설정을 완료하면 판매 관리가 열려요."'}>${icon}<span>${label}</span></button>`
         : `<div class="nav-item">${icon}<span>${label}</span></div>`).join('')}
       <button class="nav-item rms-nav-item ${rmsNavActive ? 'active' : ''}" data-rms-menu-toggle aria-expanded="${rmsMenuOpen || rmsNavActive}">${icons.chart}<span>요금 관리 (RMS)</span><i class="nav-chevron">${rmsMenuOpen || rmsNavActive ? '⌃' : '⌄'}</i></button>
-      ${rmsMenuOpen || rmsNavActive ? `<div class="rms-submenu" aria-label="요금 관리 (RMS) 메뉴"><button class="rms-submenu-item ${pricingActive ? 'selected' : ''}" data-rms-page="pricing"><i></i><span>가격 설정</span></button><button class="rms-submenu-item ${marketActive ? 'selected' : ''}" data-rms-page="market"><i></i><span>주변 시세</span></button></div>` : ''}
+      ${state.mappingCompleted && (rmsMenuOpen || rmsNavActive) ? `<div class="rms-submenu" aria-label="요금 관리 (RMS) 메뉴"><button class="rms-submenu-item ${pricingActive ? 'selected' : ''}" data-rms-page="pricing"><i></i><span>가격 설정</span></button><button class="rms-submenu-item ${marketActive ? 'selected' : ''}" data-rms-page="market"><i></i><span>주변 시세</span></button></div>` : ''}
       ${menuTailItems.map(([icon, label]) => `<div class="nav-item">${icon}<span>${label}</span></div>`).join('')}
     </nav>
     <div class="help-card"><strong>RMS가 처음이신가요?</strong><a href="#guide" data-guide>3분 사용 가이드 보기 <span>→</span></a></div>
