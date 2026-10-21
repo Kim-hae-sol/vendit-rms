@@ -545,6 +545,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .mapping-toolbar { min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
 .mapping-reset-button { color: #344054; }
 .mapping-reset-button svg { width: 16px; height: 16px; }
+.mapping-toolbar-actions { display: flex; align-items: center; gap: 10px; }
+.mapping-default-info-button { width: 40px; min-width: 40px; padding: 0; color: #344054; font-family: inherit; font-size: 14px; line-height: 1; }
 .mapping-room-select { position: relative; display: flex; align-items: center; gap: 12px; color: #a0a9b8; font-size: 12px; }
 .mapping-room-select select { width: 260px; height: 42px; appearance: none; padding: 0 42px 0 14px; border: 1px solid var(--border-input); border-radius: 9px; color: #182033; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
 .mapping-room-select i { position: absolute; right: 14px; color: #667085; font-size: 17px; font-style: normal; pointer-events: none; }
