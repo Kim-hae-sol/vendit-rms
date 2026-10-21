@@ -1239,10 +1239,11 @@ function sidebar(animateStep = false, animateCompletion = false) {
   const current = state.view === 'pricing' ? state.step : 0;
   const completedSteps = state.mappingCompleted ? 5 : Math.min(4, Math.max(0, current - 1));
   const marketActive = state.view === 'market';
-  const calendarActive = state.view === 'calendar';
+  const calendarActive = state.mappingCompleted && state.view === 'calendar';
   const pricingActive = state.view === 'pricing';
   const setupStepsVisible = pricingActive && (state.mappingCompleted || (state.step >= 1 && state.step <= 5));
-  const rmsNavActive = marketActive || pricingActive;
+  const rmsNavActive = state.mappingCompleted && (marketActive || pricingActive);
+  const menusDisabled = !state.mappingCompleted;
   const property = selectedProperty();
   const propertyMeta = property.type === 'demo' ? '데모 숙소 · 객실 샘플' : `호텔 · ${roomTotal()}실`;
   const menuItems = [[icons.doc, '판매 관리'], [icons.bed, '객실 관리']];
@@ -1261,14 +1262,15 @@ function sidebar(animateStep = false, animateCompletion = false) {
     ${setupStepsVisible ? `<div class="sidebar-progress"><strong>시작하기 · 필수</strong><span>${completedSteps}/5 완료</span><div class="progress-track"><i style="width:${completedSteps * 20}%"></i></div></div>
     <nav class="side-steps" aria-label="가격 설정 단계">${steps}</nav>
     ${state.mappingCompleted ? `<div class="sidebar-complete-banner ${animateCompletion ? 'complete-enter' : ''}"><span>✓</span><strong>시작하기를 모두 마쳤어요</strong></div>` : ''}` : ''}
-    ${state.mappingCompleted ? `<div class="side-nav-label menu-only">메뉴</div><nav class="main-nav" aria-label="주 메뉴">
+    ${setupStepsVisible && menusDisabled ? '<div class="side-nav-label">설정을 마치면 열려요</div>' : '<div class="side-nav-label menu-only">메뉴</div>'}
+    <nav class="main-nav" aria-label="주 메뉴">
       ${menuItems.map(([icon, label]) => label === '판매 관리'
-        ? `<button class="nav-item ${calendarActive ? 'active' : ''}" data-open-calendar ${state.mappingCompleted ? '' : 'disabled aria-disabled="true" title="가격 설정을 완료하면 판매 관리가 열려요."'}>${icon}<span>${label}</span></button>`
-        : `<div class="nav-item">${icon}<span>${label}</span></div>`).join('')}
-      <button class="nav-item rms-nav-item ${rmsNavActive ? 'active' : ''}" data-rms-menu-toggle aria-expanded="${rmsMenuOpen || rmsNavActive}">${icons.chart}<span>요금 관리 (RMS)</span><i class="nav-chevron">${rmsMenuOpen || rmsNavActive ? '⌃' : '⌄'}</i></button>
+        ? `<button class="nav-item ${calendarActive ? 'active' : ''}" data-open-calendar ${menusDisabled ? 'disabled aria-disabled="true" title="가격 설정을 완료하면 판매 관리가 열려요."' : ''}>${icon}<span>${label}</span></button>`
+        : `<div class="nav-item ${menusDisabled ? 'disabled' : ''}" ${menusDisabled ? 'aria-disabled="true" title="가격 설정을 완료하면 메뉴가 열려요."' : ''}>${icon}<span>${label}</span></div>`).join('')}
+      <button class="nav-item rms-nav-item ${rmsNavActive ? 'active' : ''} ${menusDisabled ? 'disabled' : ''}" data-rms-menu-toggle aria-expanded="${menusDisabled ? 'false' : rmsMenuOpen || rmsNavActive}" ${menusDisabled ? 'disabled aria-disabled="true" title="가격 설정을 완료하면 메뉴가 열려요."' : ''}>${icons.chart}<span>요금 관리 (RMS)</span><i class="nav-chevron">${!menusDisabled && (rmsMenuOpen || rmsNavActive) ? '⌃' : '⌄'}</i></button>
       ${state.mappingCompleted && (rmsMenuOpen || rmsNavActive) ? `<div class="rms-submenu" aria-label="요금 관리 (RMS) 메뉴"><button class="rms-submenu-item ${pricingActive ? 'selected' : ''}" data-rms-page="pricing"><i></i><span>가격 설정</span></button><button class="rms-submenu-item ${marketActive ? 'selected' : ''}" data-rms-page="market"><i></i><span>주변 시세</span></button></div>` : ''}
-      ${menuTailItems.map(([icon, label]) => `<div class="nav-item">${icon}<span>${label}</span></div>`).join('')}
-    </nav>` : ''}
+      ${menuTailItems.map(([icon, label]) => `<div class="nav-item ${menusDisabled ? 'disabled' : ''}" ${menusDisabled ? 'aria-disabled="true" title="가격 설정을 완료하면 메뉴가 열려요."' : ''}>${icon}<span>${label}</span></div>`).join('')}
+    </nav>
     <div class="help-card"><strong>RMS가 처음이신가요?</strong><a href="#guide" data-guide>3분 사용 가이드 보기 <span>→</span></a></div>
   </aside>`;
 }
@@ -1880,12 +1882,14 @@ app.addEventListener('click', (event) => {
   }
   const rmsMenuToggle = event.target.closest('[data-rms-menu-toggle]');
   if (rmsMenuToggle) {
+    if (!state.mappingCompleted) return;
     rmsMenuOpen = !rmsMenuOpen;
     render();
     return;
   }
   const rmsPage = event.target.closest('[data-rms-page]');
   if (rmsPage) {
+    if (!state.mappingCompleted) return;
     if (rmsPage.dataset.rmsPage === 'pricing') {
       state.view = 'pricing';
       rmsMenuOpen = false;
