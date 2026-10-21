@@ -1209,12 +1209,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .market-summary strong em.higher, .market-difference.higher { color: #f04444; }
 .market-hint { min-height: 29px; display: flex; align-items: center; gap: 5px; margin: 0; padding: 4px 7px; color: var(--primary); font-size: 10px; font-weight: 600; }
 .market-hint span { font-size: 14px; }
-.market-table-scroll { min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; overflow: auto; border: 1px solid #e1e6ef; border-radius: 12px 12px 0 0; scrollbar-width: thin; scrollbar-color: #d4dbe7 transparent; }
-.market-list-panel:not(.expanded) { align-self: start; }
-.market-list-panel.expanded { align-self: stretch; overflow: visible; }
-.market-table-scroll:not(.expanded), .market-table-scroll.expanded { height: auto; max-height: none; flex: 0 0 auto; overflow: visible; }
-.market-card.expanded { min-height: 0; overflow: visible; }
-.market-workspace.expanded { min-height: 0; overflow: visible; }
 .market-table-scroll.market-results-refresh, .market-map-canvas.market-results-refresh { animation: market-results-enter .24s ease-out both; }
 @keyframes market-results-enter { from { opacity: .55; } to { opacity: 1; } }
 .market-table { width: 100%; flex: 0 0 auto; border-collapse: separate; border-spacing: 0; table-layout: fixed; text-align: left; }
@@ -1249,17 +1243,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .market-difference.same { color: #a0a9b8; }
 .market-difference.muted { color: #b5bdc9; }
 .market-no-results { height: 90px !important; text-align: center; color: #8b95a6 !important; }
-.market-table-scroll.expanded .market-table th { height: 31px; }
-.market-table-scroll.expanded .market-table td { height: 36px; padding: 4px 6px; font-size: 10px; }
-.market-table-scroll.expanded .market-name-cell strong { font-size: 10px; }
-.market-table-scroll.expanded .market-name-cell small { margin-top: 1px; font-size: 8px; }
-.market-show-all { min-height: 32px; border: 1px solid #e1e6ef; border-top: 0; border-radius: 0 0 11px 11px; color: var(--primary); background: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }
-.market-show-all:hover { background: #f8faff; }
-.market-show-all span { margin-left: 5px; }
-.market-list-panel.expanded .market-show-all span { transform: rotate(180deg); }
-.market-list-panel.market-disclosure-animating { overflow: hidden; will-change: height; animation: market-disclosure-fade .18s ease both; }
-.market-list-panel.market-disclosure-animating .market-show-all span { transition: transform .18s ease; }
-@keyframes market-disclosure-fade { from { opacity: .88; } to { opacity: 1; } }
 .market-map-column { gap: 5px; }
 .market-map-canvas { position: relative; width: 100%; min-height: 0; height: auto; aspect-ratio: 1.09 / 1; flex: 0 0 auto; overflow: hidden; border: 1px solid #e0e6eb; border-radius: 13px; background: #edf2f4; isolation: isolate; }
 .market-map-layer { position: absolute; inset: 0; background: #f0f3f3; transform: scale(var(--market-zoom)); transform-origin: 55% 57%; transition: transform .28s cubic-bezier(.2, .75, .25, 1); }
@@ -1345,7 +1328,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .market-intro { flex: 0 0 auto; }
   .market-card { flex: 0 0 auto; min-height: 700px; }
   .market-workspace { min-height: 510px; flex: 0 0 auto; }
-  .market-table-scroll { max-height: 420px; flex: 1 1 auto; }
   .market-map-canvas { min-height: 0; }
   .market-footer { flex: 0 0 58px; }
 }
@@ -1691,13 +1673,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .market-card { min-height: 0; flex: 1 1 0; overflow: hidden; }
   .market-workspace { min-height: 0; flex: 1 1 0; overflow: hidden; }
   .market-list-panel { min-height: 0; overflow: hidden; }
-  .market-table-scroll { height: 0; min-height: 0; max-height: none; flex: 1 1 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
-  .market-list-panel:not(.expanded) { align-self: start; overflow: visible; }
-  .market-list-panel.expanded { overflow: visible; }
-  .market-table-scroll:not(.expanded) { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
-  .market-card.expanded, .page-scroll.market-scroll > .market-card.expanded { min-height: 0; flex: 1 1 0; overflow: hidden; }
-  .market-workspace.expanded { min-height: 510px; flex: 0 0 auto; overflow: visible; }
-  .market-table-scroll.expanded { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
 }
 
 /* Fixed desktop frame with screen-local overflow for 1440px and wider displays. */
@@ -1738,11 +1713,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .market-map-canvas { height: auto; min-height: 0; flex: 0 1 auto; aspect-ratio: 1.09 / 1; }
   .market-map-legend, .market-footnote { flex: 0 0 auto; }
   .market-list-panel { min-height: 0; overflow: hidden; }
-  .market-list-panel:not(.expanded) { align-self: start; overflow: visible; }
-  .market-list-panel.expanded { align-self: stretch; overflow: hidden; }
-  .market-table-scroll:not(.expanded) { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
-  .market-table-scroll.expanded { height: 0; min-height: 0; max-height: none; flex: 1 1 0; overflow-x: hidden; overflow-y: auto; }
-  .market-card.expanded, .market-workspace.expanded { min-height: 0; flex: 1 1 0; overflow: hidden; }
   .main-content > .market-footer { width: calc(100% - 64px); height: 58px; min-height: 58px; flex: 0 0 58px; margin: 0 32px 14px; padding: 7px 16px; }
 
   .page-scroll.calendar-scroll { max-width: none; gap: 12px; overflow: hidden; padding: 17px 40px 16px; }
@@ -1761,3 +1731,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .mapping-default-info-body { gap: 11px; padding: 12px 14px 14px; }
   .mapping-default-info-example { gap: 4px; }
 }
+
+
+/* Competitor results: show six rows, then scroll to see the remaining list. */
+.market-list-panel { align-self: start; overflow: visible; }
+.market-table-scroll { height: auto; min-height: 0; max-height: 306px; flex: 0 1 auto; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #e1e6ef; border-radius: 12px; scrollbar-width: thin; scrollbar-color: #d4dbe7 transparent; }
