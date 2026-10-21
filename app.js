@@ -871,7 +871,7 @@ function marketContent() {
       <div class="market-divider"></div>
       <div class="market-step2-heading"><span class="eyebrow">STEP 2 / 2</span><h2>참고할 경쟁 숙소</h2></div>
       <div class="market-toolbar"><div class="market-category-tabs" role="tablist" aria-label="숙소 종류 필터">${chips.map((chip) => `<button role="tab" aria-selected="${state.marketCategory === chip.id}" class="${state.marketCategory === chip.id ? 'active' : ''}" data-market-category="${chip.id}">${chip.label}</button>`).join('')}</div><div class="market-controls"><div class="market-radius-picker"><button class="market-radius-trigger" data-market-radius-toggle aria-expanded="${marketRadiusMenuOpen}"><span data-market-radius-trigger-label>거리 · ${marketRadiusLabel()} 안</span><i>⌄</i></button>${marketRadiusMenu()}</div><label class="market-search"><span>⌕</span><input data-market-search value="${esc(marketSearchQuery)}" placeholder="숙소 이름으로 찾기" aria-label="숙소 이름으로 찾기">${marketSearchQuery ? '<button data-market-search-clear aria-label="검색어 지우기">×</button>' : ''}</label><button class="market-refresh" data-market-refresh>${icons.refresh}<span>새로고침</span></button><div class="market-search-host" data-market-search-host>${marketSearchResults()}</div></div></div>
-      <div class="market-workspace ${state.marketShowAll ? 'expanded' : ''}"><div class="market-list-panel ${state.marketShowAll ? 'expanded' : ''}">${marketSummary()}<p class="market-hint"><span>ⓘ</span> 주변 숙소를 ${Math.max(0, 5 - state.marketComparedIds.length)}곳 더 고를 수 있어요. 고른 숙소가 적을수록 한 숙소의 가격 변화가 평균에 더 크게 반영돼요.</p><div class="market-table-scroll ${state.marketShowAll ? 'expanded' : ''}${marketResultsRefreshing ? ' market-results-refresh' : ''}"><table class="market-table"><thead><tr><th><span class="sr-only">선택</span></th><th>숙소</th><th>거리</th><th>30일 평균</th><th>오늘 가격</th><th>내 가격 대비</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="market-no-results">조건에 맞는 숙소가 없어요.</td></tr>'}</tbody></table></div><button class="market-show-all" data-market-show-all>${state.marketShowAll ? '간략히 보기' : `전체 보기 (${categoryList.length})`} <span>${state.marketShowAll ? '⌃' : '⌄'}</span></button></div><div class="market-map-column">${marketMap()}<div class="market-map-legend"><span><i class="legend-selected"></i>선택한 숙소</span><span><i class="legend-unselected"></i>선택 안 함</span><span><i class="legend-own"></i>내 숙소</span></div><p class="market-footnote">1박 · ${room.guests}인 · 세금 포함 공개가 기준으로 비교해요. 대실과 회원 전용가는 제외해요.<br>가격은 오늘 06:00 업데이트됐어요. 매진이거나 가격을 불러오지 못한 날은 평균에서 제외해요.<br>비교할 객실이 없는 숙소는 고를 수 없어요.</p></div></div>
+      <div class="market-workspace ${state.marketShowAll ? 'expanded' : ''}"><div class="market-list-panel ${state.marketShowAll ? 'expanded' : ''}">${marketSummary()}<p class="market-hint"><span>ⓘ</span> 주변 숙소를 ${Math.max(0, 5 - state.marketComparedIds.length)}곳 더 고를 수 있어요. 고른 숙소가 적을수록 한 숙소의 가격 변화가 평균에 더 크게 반영돼요.</p><div class="market-table-scroll ${state.marketShowAll ? 'expanded' : ''}${marketResultsRefreshing ? ' market-results-refresh' : ''}"><table class="market-table"><thead><tr><th><span class="sr-only">선택</span></th><th>숙소</th><th>거리</th><th>30일 평균</th><th>오늘 가격</th><th>내 가격 대비</th></tr></thead><tbody>${rows || '<tr><td colspan="6" class="market-no-results">조건에 맞는 숙소가 없어요.</td></tr>'}</tbody></table></div><button class="market-show-all" data-market-show-all>${state.marketShowAll ? '간략히 보기' : `전체 보기 (${categoryList.length})`} <span aria-hidden="true">⌄</span></button></div><div class="market-map-column">${marketMap()}<div class="market-map-legend"><span><i class="legend-selected"></i>선택한 숙소</span><span><i class="legend-unselected"></i>선택 안 함</span><span><i class="legend-own"></i>내 숙소</span></div><p class="market-footnote">1박 · ${room.guests}인 · 세금 포함 공개가 기준으로 비교해요. 대실과 회원 전용가는 제외해요.<br>가격은 오늘 06:00 업데이트됐어요. 매진이거나 가격을 불러오지 못한 날은 평균에서 제외해요.<br>비교할 객실이 없는 숙소는 고를 수 없어요.</p></div></div>
     </section>`;
 }
 function marketFooter() {
@@ -1925,8 +1925,52 @@ app.addEventListener('click', (event) => {
     return;
   }
   if (event.target.closest('[data-market-show-all]')) {
+    const previousPanelHeight = document.querySelector('.market-list-panel')?.getBoundingClientRect().height;
     state.marketShowAll = !state.marketShowAll;
     render();
+    const listPanel = document.querySelector('.market-list-panel');
+    if (listPanel && Number.isFinite(previousPanelHeight)) {
+      const chevron = listPanel.querySelector('.market-show-all span');
+      if (chevron) {
+        chevron.style.transition = 'none';
+        chevron.style.transform = state.marketShowAll ? 'rotate(0deg)' : 'rotate(180deg)';
+        void chevron.offsetWidth;
+        chevron.style.transition = 'transform .18s ease';
+        chevron.style.transform = '';
+      }
+      listPanel.classList.add('market-disclosure-animating');
+      listPanel.style.height = `${previousPanelHeight}px`;
+      listPanel.style.opacity = '.88';
+      listPanel.style.transition = 'none';
+      listPanel.style.overflow = 'hidden';
+      void listPanel.offsetHeight;
+
+      let cleanupTimer;
+      const finishDisclosure = () => {
+        clearTimeout(cleanupTimer);
+        listPanel.removeEventListener('transitionend', onDisclosureTransitionEnd);
+        listPanel.classList.remove('market-disclosure-animating');
+        listPanel.style.removeProperty('height');
+        listPanel.style.removeProperty('opacity');
+        listPanel.style.removeProperty('transition');
+        listPanel.style.removeProperty('overflow');
+        listPanel.style.removeProperty('will-change');
+        if (chevron) {
+          chevron.style.removeProperty('transition');
+          chevron.style.removeProperty('transform');
+        }
+      };
+      const onDisclosureTransitionEnd = (transitionEvent) => {
+        if (transitionEvent.target === listPanel && transitionEvent.propertyName === 'height') finishDisclosure();
+      };
+      listPanel.addEventListener('transitionend', onDisclosureTransitionEnd);
+      listPanel.style.transition = 'height .18s cubic-bezier(.2, .75, .25, 1), opacity .18s ease';
+      requestAnimationFrame(() => {
+        listPanel.style.height = `${listPanel.scrollHeight}px`;
+        listPanel.style.opacity = '1';
+      });
+      cleanupTimer = setTimeout(finishDisclosure, 260);
+    }
     const tableScroll = document.querySelector('.market-table-scroll');
     if (tableScroll) tableScroll.scrollTop = 0;
     return;
