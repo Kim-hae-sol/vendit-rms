@@ -1741,14 +1741,5 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .main-content > .market-footer { height: 58px; min-height: 58px; flex: 0 0 58px; margin: 0 32px 14px; padding: 7px 16px; }
 }
 
-/* Keep the 1440px desktop composition at ultrawide widths. */
-@media (min-width: 1601px) {
-  .main-content {
-    width: 100%;
-    max-width: 1192px;
-    margin-left: 0;
-    margin-right: auto;
-  }
-}
 
 
