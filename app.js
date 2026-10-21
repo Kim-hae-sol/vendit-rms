@@ -448,7 +448,7 @@ const percentText = (value) => {
 };
 const fmtPct = (value) => `${Number(value) > 0 ? '+' : ''}${percentText(value)}%`;
 const MAPPING_CATEGORIES = ['weekday', 'weekend', 'shoulder', 'peak'];
-const MAPPING_RECOMMENDATIONS = {
+const MAPPING_DEFAULTS = {
   weekday: ['down-1', 'down-0', 'base', 'base', 'up-1'],
   weekend: ['down-0', 'base', 'base', 'up-1', 'up-0'],
   shoulder: ['down-0', 'base', 'up-1', 'up-1', 'up-0'],
@@ -464,11 +464,11 @@ function mappingStageOptions() {
     ...down.map((pct, index) => ({ key: `down-${index}`, name: priceStageName('down', index), percent: Number(pct) })),
   ];
 }
-function recommendedMappingKey(category, index) {
+function defaultMappingKey(category, index) {
   const model = priceStageModel();
   const upCount = model.valid ? model.up.length : 0;
   const downCount = model.valid ? model.down.length : 0;
-  const pattern = MAPPING_RECOMMENDATIONS[category] || [];
+  const pattern = MAPPING_DEFAULTS[category] || [];
   let key = pattern[Math.min(index, pattern.length - 1)] || 'base';
   if (key.startsWith('up-') && Number(key.slice(3)) >= upCount) key = upCount ? `up-${upCount - 1}` : 'base';
   if (key.startsWith('down-') && Number(key.slice(5)) >= downCount) key = downCount ? `down-${downCount - 1}` : 'base';
@@ -482,16 +482,16 @@ function ensureMappingRoom(roomId) {
   const next = {};
   for (const category of MAPPING_CATEGORIES) {
     const saved = Array.isArray(current[category]) ? current[category] : [];
-    next[category] = rows.map((_, index) => available.has(saved[index]) ? saved[index] : recommendedMappingKey(category, index));
+    next[category] = rows.map((_, index) => available.has(saved[index]) ? saved[index] : defaultMappingKey(category, index));
   }
   state.mappingByRoom[roomId] = next;
   return next;
 }
-function resetMappingRoomToRecommendations(roomId) {
+function resetMappingRoomToDefaults(roomId) {
   const mapping = ensureMappingRoom(roomId);
   const rows = occupancyRanges();
   for (const category of MAPPING_CATEGORIES) {
-    mapping[category] = rows.map((_, index) => recommendedMappingKey(category, index));
+    mapping[category] = rows.map((_, index) => defaultMappingKey(category, index));
   }
   return mapping;
 }
@@ -552,10 +552,10 @@ function mappingCellMarkup(category, range, room, mapping) {
   const categoryLabel = { weekday: '평일', weekend: '주말', shoulder: '준성수기', peak: '성수기' }[category] || category;
   const choices = mappingStageOptions().map((choice) => {
     const choiceColor = priceStageColor(choice.percent);
-    const recommended = recommendedMappingKey(category, range.index) === choice.key;
+    const isDefault = defaultMappingKey(category, range.index) === choice.key;
     const selected = choice.key === key;
     const choiceLevel = mappingLevel(choice.key);
-    return `<button class="mapping-option ${choiceColor} ${choiceLevel} ${selected ? 'selected' : ''}" role="option" aria-selected="${selected}" data-map-choice="${category}|${range.index}|${choice.key}"><span class="mapping-option-swatch ${choiceColor} ${choiceLevel}"></span><strong>${choice.name}</strong><small>${fmtPct(choice.percent)}</small>${recommended ? '<em>추천</em>' : ''}<b>${money(mappingPriceForRoom(room, choice.key))}</b>${selected ? '<span class="mapping-option-check">✓</span>' : ''}</button>`;
+    return `<button class="mapping-option ${choiceColor} ${choiceLevel} ${selected ? 'selected' : ''}" role="option" aria-selected="${selected}" data-map-choice="${category}|${range.index}|${choice.key}"><span class="mapping-option-swatch ${choiceColor} ${choiceLevel}"></span><strong>${choice.name}</strong><small>${fmtPct(choice.percent)}</small>${isDefault ? '<em>기본값</em>' : ''}<b>${money(mappingPriceForRoom(room, choice.key))}</b>${selected ? '<span class="mapping-option-check">✓</span>' : ''}</button>`;
   }).join('');
   const context = `<div class="mapping-option-context"><div class="mapping-option-context-title"><span class="mapping-range-letter tone-${range.index % 5}">${range.letter}</span><strong>${range.startRooms}~${range.endRooms}실 판매</strong><b>+</b><strong>${categoryLabel}</strong></div><small>${esc(room?.name || '객실')}</small></div>`;
   return `<div class="mapping-cell-wrap ${activeRow ? 'active-row' : ''} ${activeColumn ? 'active-column' : ''} ${active ? 'menu-open' : ''}"><button class="mapping-cell ${color} ${level}" aria-haspopup="listbox" aria-expanded="${active}" data-map-cell="${category}|${range.index}"><strong>${option.name}</strong><span>${money(mappingPriceForRoom(room, key))}</span><i>⌄</i></button>${active ? `<div class="mapping-option-menu" role="listbox" aria-label="${range.letter} 구간 ${categoryLabel} 가격 단계">${context}${choices}</div>` : ''}</div>`;
@@ -591,7 +591,7 @@ function mappingContent() {
     { id: 'peak', title: '성수기', picker: mappingSeasonPicker('peak', '성수기') },
   ];
   return `<section class="question-card mapping-card">
-    <div class="mapping-toolbar"><label class="mapping-room-select"><span>객실 종류</span><select data-mapping-room>${rooms.map((item) => `<option value="${esc(item.id)}" ${item.id === state.selectedMappingRoomId ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><i>⌄</i></label><button class="secondary-button mapping-reset-button" data-mapping-reset>${icons.refresh}<span>추천값으로 되돌리기</span></button></div>
+    <div class="mapping-toolbar"><label class="mapping-room-select"><span>객실 종류</span><select data-mapping-room>${rooms.map((item) => `<option value="${esc(item.id)}" ${item.id === state.selectedMappingRoomId ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><i>⌄</i></label><div class="mapping-toolbar-actions"><button class="secondary-button mapping-reset-button" data-mapping-reset>${icons.refresh}<span>기본값으로 되돌리기</span></button><button class="secondary-button mapping-default-info-button" type="button" data-mapping-default-info aria-label="기본값 안내" title="기본값은 설정 1~3단계의 결과를 바탕으로 채워져요."><span aria-hidden="true">i</span></button></div></div>
     <div class="mapping-grid-wrap"><div class="mapping-grid">
       <div class="mapping-column-heading mapping-occupancy-heading"><strong>판매 상황</strong><span>전체 ${roomTotal()}실 기준 <button data-mapping-edit-ranges>구간 수정</button></span></div>
       ${columns.map((column) => `<div class="mapping-column-heading ${mappingOpenCell?.category === column.id ? 'active-column' : ''}"><strong>${column.title}</strong>${column.subtitle ? `<span class="mapping-column-chip">${esc(column.subtitle)}</span>` : column.picker}</div>`).join('')}
@@ -2007,13 +2007,16 @@ app.addEventListener('click', (event) => {
       : `${property.name}이 선택되어 있어요.`);
     return;
   }
+  if (event.target.closest('[data-mapping-default-info]')) {
+    showToast('기본값은 설정 1~3단계(기본 정보·가격 단계·점유율 구간)의 결과를 바탕으로 채워져요.'); return;
+  }
   if (event.target.closest('[data-mapping-reset]')) {
     const room = state.rooms.find((item) => item.id === state.selectedMappingRoomId);
     if (!room) return;
-    resetMappingRoomToRecommendations(room.id);
+    resetMappingRoomToDefaults(room.id);
     mappingOpenCell = null;
     mappingOpenSeasonCategory = '';
-    save(); render(); showToast(`${room.name}의 상황별 가격을 추천값으로 되돌렸어요.`); return;
+    save(); render(); showToast(`${room.name}의 상황별 가격을 기본값으로 되돌렸어요.`); return;
   }
   const mapCell = event.target.closest('[data-map-cell]');
   if (mapCell) {
