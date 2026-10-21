@@ -1,4 +1,8 @@
-const STORAGE_KEY = 'vendit-rms-prototype-v1';
+const DEMO_MODE = new URLSearchParams(location.search).get('demo') === '1';
+const STORAGE_KEY = DEMO_MODE ? 'vendit-rms-prototype-demo-v1' : 'vendit-rms-prototype-v1';
+if (DEMO_MODE) {
+  try { localStorage.removeItem(STORAGE_KEY); } catch { /* local storage may be unavailable */ }
+}
 const MIN_BASE_PRICE = 100;
 const {
   MIN_LIMIT: MIN_PRICE_LIMIT,
