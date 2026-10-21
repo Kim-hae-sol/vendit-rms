@@ -743,6 +743,18 @@ function marketCompetitorRoom(item) {
 function marketCategoryList() {
   return COMPETITORS.filter((item) => state.marketCategory === 'all' || item.type === state.marketCategory);
 }
+function marketRecommendationOrder(items) {
+  const selected = new Set(state.marketComparedIds);
+  const ownPrice = marketOwnPrice();
+  const priceGap = (item) => {
+    const today = marketCompetitorRoom(item)?.today;
+    return Number.isFinite(today) ? Math.abs(today - ownPrice) : Infinity;
+  };
+  return [...items].sort((a, b) => {
+    const selectedOrder = Number(selected.has(b.id)) - Number(selected.has(a.id));
+    return selectedOrder || priceGap(a) - priceGap(b) || a.distance - b.distance;
+  });
+}
 function marketRateDifference(item) {
   const comparisonRoom = marketCompetitorRoom(item);
   if (!comparisonRoom) return { text: '—', className: 'muted' };
@@ -862,7 +874,7 @@ function marketMap() {
 function marketContent() {
   const room = marketRoom();
   const categoryList = marketCategoryList();
-  const list = categoryList;
+  const list = marketRecommendationOrder(categoryList);
   const chips = [
     { id: 'all', label: `전체 ${COMPETITORS.length}` },
     { id: 'hotel', label: `호텔 ${COMPETITORS.filter((item) => item.type === 'hotel').length}` },
