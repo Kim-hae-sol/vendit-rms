@@ -1731,7 +1731,11 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .page-scroll.market-scroll > .market-intro { min-height: 146px; flex: 0 0 146px; }
   .page-scroll.market-scroll > .market-card { min-height: 0; flex: 1 1 0; overflow: hidden; }
   .page-scroll.market-scroll > .market-card.expanded { min-height: 0; flex: 0 0 auto; overflow: visible; }
-  .market-workspace { min-height: 0; flex: 1 1 0; overflow: hidden; }
+  .market-workspace {
+    min-height: 0; flex: 1 1 0; overflow: hidden;
+    grid-template-columns: minmax(0, 1fr) minmax(0, calc(109dvh - 664px));
+  }
+  .market-map-column { min-width: 0; }
   .market-list-panel { min-height: 0; overflow: hidden; }
   .market-workspace.expanded { min-height: 510px; flex: 0 0 auto; overflow: visible; }
   .market-list-panel:not(.expanded) { align-self: start; overflow: visible; }
