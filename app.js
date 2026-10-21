@@ -111,7 +111,6 @@ const icons = {
   card: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>',
   sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
   refresh: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4.5 10a7.5 7.5 0 0 1 13-3L20 12M4 17v-5h5m10.5 2a7.5 7.5 0 0 1-13 3L4 12"/></svg>',
-  grip: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="5" cy="4" r="1.2"/><circle cx="11" cy="4" r="1.2"/><circle cx="5" cy="8" r="1.2"/><circle cx="11" cy="8" r="1.2"/><circle cx="5" cy="12" r="1.2"/><circle cx="11" cy="12" r="1.2"/></svg>',
 };
 
 function cloneDefaults() { return structuredClone(DEFAULT_STATE); }
@@ -1309,8 +1308,8 @@ function stageRows(type) {
     const isCountHighlight = stageCountHighlight?.type === type && stageCountHighlight.index === index;
     const isLimitStage = type === 'up' ? index === 0 : index === values.length - 1;
     const extremeLabel = type === 'up' ? (index === 0 ? '<span class="extreme-badge">최고가</span>' : '<span class="extreme-spacer"></span>') : (index === values.length - 1 ? '<span class="extreme-badge">최저가</span>' : '<span class="extreme-spacer"></span>');
-    return `<div class="stage-row ${type}${isCountHighlight ? ' count-highlight' : ''}" draggable="${!isLimitStage}" data-stage-row="${type}" data-stage-index="${index}">
-      <span class="drag-grip" aria-label="단계 순서 바꾸기">${icons.grip}</span><span class="stage-swatch" style="--stage-swatch-color:${swatchColor}"></span><strong>${name}</strong>${extremeLabel}<span class="stage-price">${money(price)}</span>
+    return `<div class="stage-row ${type}${isCountHighlight ? ' count-highlight' : ''}" data-stage-row="${type}" data-stage-index="${index}">
+      <span class="stage-swatch" style="--stage-swatch-color:${swatchColor}"></span><strong>${name}</strong>${extremeLabel}<span class="stage-price">${money(price)}</span>
       <label class="percent-input"><input type="number" step="0.1" value="${pct}" aria-label="${name} 변동률" data-stage-pct="${type}" data-index="${index}" ${isLimitStage ? 'readonly' : ''}><span>%</span></label>
       <button class="remove-stage" aria-label="${name} 삭제" data-remove-stage="${type}" data-index="${index}">×</button>
     </div>`;
@@ -2427,45 +2426,6 @@ app.addEventListener('input', (event) => {
   const saveButton = document.querySelector('[data-season-save]');
   const invalidDate = [...document.querySelectorAll('[data-season-date]')].some((input) => input.getAttribute('aria-invalid') === 'true');
   if (saveButton) saveButton.disabled = missing || invalidDate || hasDuplicateSeasonSchedule();
-});
-
-app.addEventListener('dragstart', (event) => {
-  const row = event.target.closest('[data-stage-row]');
-  if (!row || row.draggable === false) return;
-  event.dataTransfer.effectAllowed = 'move';
-  event.dataTransfer.setData('text/plain', JSON.stringify({ type: row.dataset.stageRow, index: Number(row.dataset.stageIndex) }));
-  row.classList.add('dragging');
-});
-app.addEventListener('dragend', (event) => event.target.closest('[data-stage-row]')?.classList.remove('dragging'));
-app.addEventListener('dragover', (event) => { if (event.target.closest('[data-stage-row]')) event.preventDefault(); });
-app.addEventListener('drop', (event) => {
-  const target = event.target.closest('[data-stage-row]');
-  if (!target) return;
-  event.preventDefault();
-  try {
-    const from = JSON.parse(event.dataTransfer.getData('text/plain'));
-    const type = target.dataset.stageRow;
-    const toIndex = Number(target.dataset.stageIndex);
-    if (!['up', 'down'].includes(type)) return;
-    const list = state[type];
-    const sourceIsLimit = type === 'up' ? from.index === 0 : from.index === list.length - 1;
-    const targetIsLimit = type === 'up' ? toIndex === 0 : toIndex === list.length - 1;
-    if (from.type !== type || from.index === toIndex || sourceIsLimit || targetIsLimit
-      || from.index < 0 || from.index >= list.length || toIndex < 0 || toIndex >= list.length) return;
-    const currentModel = priceStageModel();
-    const candidate = {
-      upPrices: [...currentModel.upPrices],
-      downPrices: [...currentModel.downPrices],
-    };
-    const next = candidate[`${type}Prices`];
-    next.splice(toIndex, 0, next.splice(from.index, 1)[0]);
-    const model = calculatePriceStageModel(currentModel.base, state.minLimit, state.maxLimit, state.up.length, state.down.length, candidate);
-    if (!model.valid) return;
-    state.stagePriceOverrides = candidate;
-    state.up = model.up;
-    state.down = model.down;
-    save(); render();
-  } catch { /* ignore unsupported drops */ }
 });
 
 render();
