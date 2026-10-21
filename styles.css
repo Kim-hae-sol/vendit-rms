@@ -1736,3 +1736,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 /* Competitor results: show six rows, then scroll to see the remaining list. */
 .market-list-panel { align-self: start; overflow: visible; }
 .market-table-scroll { height: auto; min-height: 0; max-height: 306px; flex: 0 1 auto; display: flex; flex-direction: column; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; border: 1px solid #e1e6ef; border-radius: 12px; scrollbar-width: thin; scrollbar-color: #d4dbe7 transparent; }
+
+/* Restore week calendar cell separators after interactive buttons reset their borders. */
+.calendar-week-grid > .calendar-week-occupancy,
+.calendar-week-grid > .calendar-week-price { border-right: 1px solid #e5e8ef; border-bottom: 1px solid #e5e8ef; }
+.calendar-week-grid > :nth-child(8n + 1) { border-right: 0; }
