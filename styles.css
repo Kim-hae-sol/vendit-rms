@@ -1668,7 +1668,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .market-list-panel:not(.expanded) { align-self: start; overflow: visible; }
   .market-list-panel.expanded { overflow: visible; }
   .market-table-scroll:not(.expanded) { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
-  .market-card.expanded, .page-scroll.market-scroll > .market-card.expanded { min-height: 0; flex: 0 0 auto; overflow: visible; }
+  .market-card.expanded, .page-scroll.market-scroll > .market-card.expanded { min-height: 0; flex: 1 1 0; overflow: hidden; }
   .market-workspace.expanded { min-height: 510px; flex: 0 0 auto; overflow: visible; }
   .market-table-scroll.expanded { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
 }
