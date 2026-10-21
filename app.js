@@ -1260,15 +1260,15 @@ function sidebar(animateStep = false, animateCompletion = false) {
     <div class="property"><span class="property-icon">${icons.hotel}</span><span><strong>${esc(property.name)}</strong><small>${propertyMeta}</small></span></div>
     ${setupStepsVisible ? `<div class="sidebar-progress"><strong>시작하기 · 필수</strong><span>${completedSteps}/5 완료</span><div class="progress-track"><i style="width:${completedSteps * 20}%"></i></div></div>
     <nav class="side-steps" aria-label="가격 설정 단계">${steps}</nav>
-    ${state.mappingCompleted ? `<div class="sidebar-complete-banner ${animateCompletion ? 'complete-enter' : ''}"><span>✓</span><strong>시작하기를 모두 마쳤어요</strong></div>` : '<div class="side-nav-label">설정을 마치면 열려요<br><span>메뉴</span></div>'}` : '<div class="side-nav-label menu-only">메뉴</div>'}
-    <nav class="main-nav" aria-label="주 메뉴">
+    ${state.mappingCompleted ? `<div class="sidebar-complete-banner ${animateCompletion ? 'complete-enter' : ''}"><span>✓</span><strong>시작하기를 모두 마쳤어요</strong></div>` : ''}` : ''}
+    ${state.mappingCompleted ? `<div class="side-nav-label menu-only">메뉴</div><nav class="main-nav" aria-label="주 메뉴">
       ${menuItems.map(([icon, label]) => label === '판매 관리'
         ? `<button class="nav-item ${calendarActive ? 'active' : ''}" data-open-calendar ${state.mappingCompleted ? '' : 'disabled aria-disabled="true" title="가격 설정을 완료하면 판매 관리가 열려요."'}>${icon}<span>${label}</span></button>`
         : `<div class="nav-item">${icon}<span>${label}</span></div>`).join('')}
       <button class="nav-item rms-nav-item ${rmsNavActive ? 'active' : ''}" data-rms-menu-toggle aria-expanded="${rmsMenuOpen || rmsNavActive}">${icons.chart}<span>요금 관리 (RMS)</span><i class="nav-chevron">${rmsMenuOpen || rmsNavActive ? '⌃' : '⌄'}</i></button>
       ${state.mappingCompleted && (rmsMenuOpen || rmsNavActive) ? `<div class="rms-submenu" aria-label="요금 관리 (RMS) 메뉴"><button class="rms-submenu-item ${pricingActive ? 'selected' : ''}" data-rms-page="pricing"><i></i><span>가격 설정</span></button><button class="rms-submenu-item ${marketActive ? 'selected' : ''}" data-rms-page="market"><i></i><span>주변 시세</span></button></div>` : ''}
       ${menuTailItems.map(([icon, label]) => `<div class="nav-item">${icon}<span>${label}</span></div>`).join('')}
-    </nav>
+    </nav>` : ''}
     <div class="help-card"><strong>RMS가 처음이신가요?</strong><a href="#guide" data-guide>3분 사용 가이드 보기 <span>→</span></a></div>
   </aside>`;
 }
