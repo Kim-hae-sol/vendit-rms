@@ -1232,6 +1232,10 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .market-show-all { min-height: 32px; border: 1px solid #e1e6ef; border-top: 0; border-radius: 0 0 11px 11px; color: var(--primary); background: #fff; font-size: 11px; font-weight: 700; cursor: pointer; }
 .market-show-all:hover { background: #f8faff; }
 .market-show-all span { margin-left: 5px; }
+.market-list-panel.expanded .market-show-all span { transform: rotate(180deg); }
+.market-list-panel.market-disclosure-animating { overflow: hidden; will-change: height; animation: market-disclosure-fade .18s ease both; }
+.market-list-panel.market-disclosure-animating .market-show-all span { transition: transform .18s ease; }
+@keyframes market-disclosure-fade { from { opacity: .88; } to { opacity: 1; } }
 .market-map-column { gap: 5px; }
 .market-map-canvas { position: relative; width: 100%; min-height: 0; height: auto; aspect-ratio: 1.09 / 1; flex: 0 0 auto; overflow: hidden; border: 1px solid #e0e6eb; border-radius: 13px; background: #edf2f4; isolation: isolate; }
 .market-map-layer { position: absolute; inset: 0; background: #f0f3f3; transform: scale(var(--market-zoom)); transform-origin: 55% 57%; transition: transform .28s cubic-bezier(.2, .75, .25, 1); }
