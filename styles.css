@@ -748,32 +748,32 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .holiday-eve-option small { color: #a0a9b8; font-size: 11px; }
 .season-drawer-backdrop { position: fixed; z-index: 40; inset: 0; background: rgba(18, 27, 47, .3); }
 .season-drawer-backdrop.drawer-enter { animation: overlay-enter .16s ease-out both; }
-.season-drawer { width: min(420px, 100vw); height: 100%; position: absolute; top: 0; right: 0; display: flex; flex-direction: column; background: #fff; box-shadow: -10px 0 35px rgba(17, 24, 39, .12); }
+.season-drawer { width: min(440px, 100vw); height: 100%; position: absolute; top: 0; right: 0; display: flex; flex-direction: column; background: #fff; box-shadow: -10px 0 35px rgba(17, 24, 39, .12); }
 .season-drawer.drawer-enter { animation: drawer-enter .2s cubic-bezier(.2, .75, .25, 1) both; }
 @keyframes drawer-enter { from { opacity: .85; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
-.season-drawer-header { padding: 24px 28px 20px; border-bottom: 1px solid #edf0f5; }
+.season-drawer-header { padding: 32px 32px; border-bottom: 1px solid #edf0f5; }
 .season-drawer-header h2 { margin: 0 0 7px; color: #111827; font-size: 22px; letter-spacing: -.03em; }
 .season-drawer-header p { margin: 0; color: #8a93a2; font-size: 13px; line-height: 1.55; }
-.season-drawer-body { flex: 1; overflow-y: auto; padding: 26px 28px; }
+.season-drawer-body { flex: 1; overflow-y: auto; padding: 32px; }
 .season-form-field { display: flex; flex-direction: column; gap: 10px; margin: 0 0 28px; padding: 0; border: 0; }
 .season-form-field > strong, .season-type-field legend { padding: 0; color: #475467; font-size: 13px; font-weight: 700; }
 .season-form-field > input { width: 100%; height: 48px; padding: 0 14px; border: 1px solid var(--border-input); border-radius: 10px; color: #182033; background: #fff; font-size: 16px; font-weight: 700; }
-.season-type-options { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 11px; background: #f0f2f6; }
+.season-type-options { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 14px; padding: 4px; border-radius: 11px; background: #f0f2f6; }
 .season-type-options button { min-height: 43px; border: 0; border-radius: 8px; color: #7b8494; background: transparent; font-size: 13px; font-weight: 700; cursor: pointer; }
 .season-type-options button.selected { color: #344054; background: #fff; box-shadow: 0 1px 4px rgba(17, 24, 39, .12); }
 .season-period-label { display: flex; align-items: baseline; gap: 7px; }
 .season-period-label strong { color: #475467; font-size: 13px; }
 .season-period-label span { color: #a0a9b8; font-size: 11px; }
 .season-date-fields { display: flex; flex-direction: column; gap: 10px; }
-.season-date-range { display: grid; grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr); align-items: center; gap: 8px; }
+.season-date-range { display: grid; grid-template-columns: minmax(0, 1fr) 18px minmax(0, 1fr); align-items: center; gap: 6px; }
 .season-date-range > span { color: #98a1af; text-align: center; }
-.season-date-control { min-width: 0; height: 52px; position: relative; }
+.season-date-control { min-width: 0; height: 48px; position: relative; }
 .season-date-control > label { height: 100%; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px; padding: 5px 42px 5px 12px; border: 1px solid var(--border-input); border-radius: 9px; background: #fff; }
 .season-date-control > label:focus-within { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
 .season-date-control > label:has(input[aria-invalid="true"]) { border-color: #e5484d; }
 .season-date-control label > small { color: #a0a9b8; font-size: 10px; }
 .season-date-control input { width: 100%; min-width: 0; padding: 0; border: 0; outline: 0; color: #182033; background: transparent; font: inherit; font-size: 14px; font-weight: 700; }
-.season-date-calendar-button { width: 34px; height: 38px; position: absolute; top: 7px; right: 6px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 7px; color: #7b8494; background: transparent; cursor: pointer; transition: color .14s ease, background-color .14s ease, transform .14s ease; }
+.season-date-calendar-button { width: 34px; height: 38px; position: absolute; top: 5px; right: 6px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 7px; color: #7b8494; background: transparent; cursor: pointer; transition: color .14s ease, background-color .14s ease, transform .14s ease; }
 .season-date-calendar-button:hover, .season-date-calendar-button.active { color: var(--primary); background: #eef3ff; }
 .season-date-calendar-button:active { transform: scale(.94); }
 .season-date-calendar-button svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
@@ -786,7 +786,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .season-form-error[hidden] { display: none !important; }
 .season-duplicate-warning span { display: grid; width: 18px; height: 18px; flex: 0 0 18px; place-items: center; border-radius: 50%; color: #fff; background: #e5484d; font-size: 12px; font-weight: 800; }
 .season-drawer-footer button:disabled { cursor: not-allowed; opacity: .45; }
-.season-drawer-footer { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 28px; border-top: 1px solid #edf0f5; }
+.season-drawer-footer { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 32px; border-top: 1px solid #edf0f5; }
 .season-drawer-footer > div { display: flex; align-items: center; gap: 9px; }
 .season-drawer-footer .secondary-button, .season-drawer-footer .primary-button { min-width: 96px; min-height: 44px; }
 .season-delete-button { padding: 8px 0; border: 0; color: #e03131; background: transparent; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -830,8 +830,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .weekday-option { min-height: 48px; }
   .weekday-option strong { font-size: 14px; }
   .holiday-eve-option strong { font-size: 11px; }
-  .season-drawer-header, .season-drawer-body { padding-left: 20px; padding-right: 20px; }
-  .season-drawer-footer { padding-left: 20px; padding-right: 20px; }
+  .season-drawer-header, .season-drawer-body { padding-left: clamp(20px, 6.4vw, 32px); padding-right: clamp(20px, 6.4vw, 32px); }
+  .season-drawer-footer { padding-left: clamp(20px, 6.4vw, 32px); padding-right: clamp(20px, 6.4vw, 32px); }
   .calendar-month-pair { gap: 10px; }
   .season-range-calendar { padding: 20px 12px 13px; }
   .calendar-months-shell { padding: 0 19px; }
