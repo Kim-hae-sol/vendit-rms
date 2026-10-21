@@ -547,6 +547,30 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .mapping-reset-button svg { width: 16px; height: 16px; }
 .mapping-toolbar-actions { display: flex; align-items: center; gap: 10px; }
 .mapping-default-info-button { width: 40px; min-width: 40px; padding: 0; color: #344054; font-family: inherit; font-size: 14px; line-height: 1; }
+.mapping-default-info-panel { width: 504px; max-width: calc(100% - 56px); position: absolute; z-index: 15; top: 68px; right: 28px; overflow: hidden; border: 1px solid #e5e9f0; border-radius: 12px; background: #fff; box-shadow: 0 12px 30px rgba(24, 32, 58, .18); transform-origin: top right; animation: mapping-default-info-enter .16s cubic-bezier(.2, .75, .25, 1) both; }
+.mapping-default-info-header { padding: 15px 20px 12px; border-bottom: 1px solid #edf0f5; }
+.mapping-default-info-header > strong { color: #182033; font-size: 14px; font-weight: 800; }
+.mapping-default-info-header > p { margin: 5px 0 0; color: #7b8494; font-size: 10px; }
+.mapping-default-info-body { display: grid; gap: 14px; padding: 14px 20px 18px; }
+.mapping-default-info-section { display: flex; align-items: flex-start; gap: 10px; color: #182033; }
+.mapping-default-info-number { width: 20px; height: 20px; display: grid; flex: 0 0 20px; place-items: center; margin-top: 1px; border-radius: 50%; color: #fff; background: #1f2937; font-size: 10px; }
+.mapping-default-info-section > div { min-width: 0; flex: 1; }
+.mapping-default-info-section > div > strong { display: block; margin: 1px 0 6px; color: #182033; font-size: 11px; font-weight: 800; }
+.mapping-default-weekday-list, .mapping-default-date-rules { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+.mapping-default-weekday-list > span, .mapping-default-date-rules > span { display: inline-flex; align-items: center; gap: 4px; color: #475467; font-size: 9px; white-space: nowrap; }
+.mapping-default-weekday-list .mapping-range-letter { width: 16px; height: 16px; flex-basis: 16px; border-radius: 5px; font-size: 8px; }
+.mapping-default-chip { display: inline-flex; align-items: center; padding: 2px 5px; border: 0; border-radius: 4px; color: #344054; background: #f0f2f5; font-size: 9px; font-style: normal; font-weight: 700; line-height: 1.25; white-space: nowrap; }
+.mapping-default-chip.down { color: #2563d9; background: #e4ecff; }
+.mapping-default-chip.down.level-2 { color: #1d4fb8; background: #cad9ff; }
+.mapping-default-chip.up { color: #c73131; background: #ffe0e0; }
+.mapping-default-chip.up.level-2, .mapping-default-chip.strong { color: #a92222; background: #f8baba; }
+.mapping-default-info-section > div > small { display: block; margin-top: 7px; color: #929baa; font-size: 9px; }
+.mapping-default-info-section > div > p { margin: 0; color: #475467; font-size: 9px; line-height: 1.5; }
+.mapping-default-info-example { min-width: 0; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; padding: 10px 12px; border-radius: 8px; color: #344054; background: #f4f7ff; font-size: 9px; }
+.mapping-default-info-example > b { color: var(--primary); font-size: 9px; }
+.mapping-default-info-example > strong { margin-left: auto; color: #182033; font-size: 11px; font-weight: 800; white-space: nowrap; }
+@keyframes mapping-default-info-enter { from { opacity: 0; transform: translateY(-4px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.mapping-room-select { position: relative; display: flex; align-items: center; gap: 12px; color: #a0a9b8; font-size: 12px; }
 .mapping-room-select { position: relative; display: flex; align-items: center; gap: 12px; color: #a0a9b8; font-size: 12px; }
 .mapping-room-select select { width: 260px; height: 42px; appearance: none; padding: 0 42px 0 14px; border: 1px solid var(--border-input); border-radius: 9px; color: #182033; background: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
 .mapping-room-select i { position: absolute; right: 14px; color: #667085; font-size: 17px; font-style: normal; pointer-events: none; }
@@ -1729,4 +1753,11 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .calendar-month-grid { min-width: 0; min-height: 0; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: 35px repeat(var(--calendar-rows), minmax(0, 1fr)); }
   .calendar-week-grid { min-width: 0; min-height: 0; grid-template-columns: minmax(145px, 1.08fr) repeat(7, minmax(0, 1fr)); grid-template-rows: 54px minmax(0, .72fr) repeat(var(--calendar-room-rows, 3), minmax(0, 1fr)); }
   .calendar-detail-drawer { width: 480px; }
+}
+
+@media (max-width: 760px) {
+  .mapping-default-info-panel { top: 86px; right: 12px; width: calc(100% - 24px); max-width: none; }
+  .mapping-default-info-header { padding: 12px 14px 10px; }
+  .mapping-default-info-body { gap: 11px; padding: 12px 14px 14px; }
+  .mapping-default-info-example { gap: 4px; }
 }
