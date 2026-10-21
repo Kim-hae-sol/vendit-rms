@@ -1703,7 +1703,7 @@ function render() {
   const pageContent = isCalendar || isMarket ? content : `${stepper()}${introCard()}${content}`;
   const fixedFooter = isMarket ? marketFooter() : isCalendar ? '' : footer();
   const scrollClass = isMarket ? 'market-scroll' : isCalendar ? 'calendar-scroll' : '';
-  app.innerHTML = `<div class="shell">${sidebar(animateStep, animateCompletion)}<div class="main-column">${topbar()}<main class="main-content ${isMarket ? 'market-main' : ''} ${isCalendar ? 'calendar-main' : ''} ${animateStep ? 'step-enter' : ''} ${animatePage ? 'page-enter' : ''}"><div class="page-scroll ${scrollClass}">${pageContent}</div>${fixedFooter}</main></div></div>${!isMarket && !isCalendar && state.step === 4 ? seasonOverlays() : ''}${resetConfirmDialog()}`;
+  app.innerHTML = `<div class="shell ${isMarket ? 'market-shell' : ''}">${sidebar(animateStep, animateCompletion)}<div class="main-column ${isMarket ? 'market-main-column' : ''}">${topbar()}<main class="main-content ${isMarket ? 'market-main' : ''} ${isCalendar ? 'calendar-main' : ''} ${animateStep ? 'step-enter' : ''} ${animatePage ? 'page-enter' : ''}"><div class="page-scroll ${scrollClass}">${pageContent}</div>${fixedFooter}</main></div></div>${!isMarket && !isCalendar && state.step === 4 ? seasonOverlays() : ''}${resetConfirmDialog()}`;
   stageCountHighlight = null;
   marketResultsRefreshing = false;
   if (preserveScroll) {
