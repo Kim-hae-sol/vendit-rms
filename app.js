@@ -592,7 +592,7 @@ function mappingContent() {
     { id: 'peak', title: '성수기', picker: mappingSeasonPicker('peak', '성수기') },
   ];
   return `<section class="question-card mapping-card">
-    <div class="mapping-toolbar"><label class="mapping-room-select"><span>객실 종류</span><select data-mapping-room>${rooms.map((item) => `<option value="${esc(item.id)}" ${item.id === state.selectedMappingRoomId ? 'selected' : ''}>${esc(item.name)}　추천값</option>`).join('')}</select><i>⌄</i></label><button class="secondary-button mapping-reset-button" data-mapping-reset>${icons.refresh}<span>추천값으로 되돌리기</span></button></div>
+    <div class="mapping-toolbar"><label class="mapping-room-select"><span>객실 종류</span><select data-mapping-room>${rooms.map((item) => `<option value="${esc(item.id)}" ${item.id === state.selectedMappingRoomId ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><i>⌄</i></label><button class="secondary-button mapping-reset-button" data-mapping-reset>${icons.refresh}<span>추천값으로 되돌리기</span></button></div>
     <div class="mapping-grid-wrap"><div class="mapping-grid">
       <div class="mapping-column-heading mapping-occupancy-heading"><strong>판매 상황</strong><span>전체 ${roomTotal()}실 기준 <button data-mapping-edit-ranges>구간 수정</button></span></div>
       ${columns.map((column) => `<div class="mapping-column-heading ${mappingOpenCell?.category === column.id ? 'active-column' : ''}"><strong>${column.title}</strong>${column.subtitle ? `<span class="mapping-column-chip">${esc(column.subtitle)}</span>` : column.picker}</div>`).join('')}
