@@ -234,6 +234,7 @@ let calendarView = { year: new Date().getFullYear(), month: new Date().getMonth(
 let mappingOpenCell = null;
 let mappingOpenSeasonCategory = '';
 let mappingHelpOpen = false;
+let mappingDefaultInfoOpen = false;
 let resetConfirmOpen = false;
 let seasonPopoverEntering = false;
 let seasonDrawerEntering = false;
@@ -572,6 +573,32 @@ function mappingSeasonPicker(category, label) {
 function mappingHelp() {
   return `<section class="mapping-help ${mappingHelpOpen ? 'open' : ''}"><button class="mapping-help-toggle" data-mapping-help-toggle aria-expanded="${mappingHelpOpen}"><span class="mapping-info-icon">ⓘ</span><strong>주말과 시즌이 겹치면 어떤 가격이 적용될까요?</strong><span class="mapping-help-chevron">${mappingHelpOpen ? '⌃' : '⌄'}</span></button>${mappingHelpOpen ? `<div class="mapping-help-body"><p>겹치는 날에는 <strong>더 높은 가격 단계 하나만</strong> 적용돼요.</p><div class="mapping-help-example"><small><b>예시</b> 주말은 -1단계, 성수기는 +1단계일 때</small><div class="mapping-help-flow"><div><small>주말 <em>더 낮음</em></small><strong>-1단계 <span>-10%</span></strong></div><b class="mapping-vs">vs</b><div class="higher"><small>성수기 <em>더 높음</em></small><strong>+1단계 <span>+20%</span></strong></div><span class="mapping-help-arrow">→</span><div class="final"><small>최종 적용</small><strong>+1단계 <span>+20%</span></strong></div></div></div></div>` : ''}</section>`;
 }
+function mappingDefaultInfoMarkup(room) {
+  const model = priceStageModel();
+  const upCount = model.valid ? model.up.length : 0;
+  const downCount = model.valid ? model.down.length : 0;
+  const ranges = occupancyRanges();
+  const exampleRange = ranges.find((range) => range.letter === 'C') || ranges[Math.floor(ranges.length / 2)] || null;
+  const renderStageChip = (key, extraClass = '') => {
+    const option = mappingOption(key);
+    return `<em class="mapping-default-chip ${priceStageColor(option.percent)} ${mappingLevel(key)} ${extraClass}">${option.name}</em>`;
+  };
+  const exampleWeekdayKey = exampleRange ? defaultMappingKey('weekday', exampleRange.index) : 'base';
+  const examplePeakKey = exampleRange ? defaultMappingKey('peak', exampleRange.index) : 'base';
+  const oneUpKey = upCount ? `up-${upCount - 1}` : 'base';
+  const twoUpKey = upCount > 1 ? `up-${upCount - 2}` : oneUpKey;
+  const upperLimit = upCount ? `+${upCount}단계` : '기준가';
+  const lowerLimit = downCount ? `-${downCount}단계` : '기준가';
+  return `<aside class="mapping-default-info-panel" id="mapping-default-info-panel" data-mapping-default-info-panel role="dialog" aria-label="기본값 안내">
+    <header class="mapping-default-info-header"><strong>기본값은 이렇게 채웠어요</strong><p>사장님이 정한 가격 단계(${lowerLimit} ~ ${upperLimit}) 안에서 칸마다 하나씩 골랐어요.</p></header>
+    <div class="mapping-default-info-body">
+      <section class="mapping-default-info-section"><b class="mapping-default-info-number">1</b><div><strong>평일은 판매 구간으로 정해요</strong><div class="mapping-default-weekday-list">${ranges.map((range) => `<span><i class="mapping-range-letter tone-${range.index % 5}">${range.letter}</i>${renderStageChip(defaultMappingKey('weekday', range.index))}</span>`).join('')}</div></div></section>
+      <section class="mapping-default-info-section"><b class="mapping-default-info-number">2</b><div><strong>날짜에 따라 단계를 더해요</strong><div class="mapping-default-date-rules"><span>주말 ${renderStageChip(oneUpKey)}</span><span>준성수기 ${renderStageChip(oneUpKey)}</span><span>성수기 ${renderStageChip(twoUpKey, 'strong')}</span></div><small>주말과 시즌이 겹치면 더 높은 쪽을 써요</small></div></section>
+      <section class="mapping-default-info-section"><b class="mapping-default-info-number">3</b><div><strong>정한 범위를 넘지 않아요</strong><p>${upperLimit}보다 높아지면 ${upperLimit}, ${lowerLimit}보다 낮아지면 ${lowerLimit}로 맞춰요.</p></div></section>
+      <div class="mapping-default-info-example"><b>예시</b><span>${exampleRange?.letter || 'C'} 구간 평일</span>${renderStageChip(exampleWeekdayKey)}<span>+</span><span>성수기</span>${renderStageChip(twoUpKey)}<span>=</span>${renderStageChip(examplePeakKey, 'result')}<strong>${money(mappingPriceForRoom(room, examplePeakKey))}</strong></div>
+    </div>
+  </aside>`;
+}
 function mappingContent() {
   const rooms = state.rooms;
   const priceStages = priceStageModel();
@@ -591,7 +618,8 @@ function mappingContent() {
     { id: 'peak', title: '성수기', picker: mappingSeasonPicker('peak', '성수기') },
   ];
   return `<section class="question-card mapping-card">
-    <div class="mapping-toolbar"><label class="mapping-room-select"><span>객실 종류</span><select data-mapping-room>${rooms.map((item) => `<option value="${esc(item.id)}" ${item.id === state.selectedMappingRoomId ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><i>⌄</i></label><div class="mapping-toolbar-actions"><button class="secondary-button mapping-reset-button" data-mapping-reset>${icons.refresh}<span>기본값으로 되돌리기</span></button><button class="secondary-button mapping-default-info-button" type="button" data-mapping-default-info aria-label="기본값 안내" title="기본값은 설정 1~3단계의 결과를 바탕으로 채워져요."><span aria-hidden="true">i</span></button></div></div>
+    <div class="mapping-toolbar"><label class="mapping-room-select"><span>객실 종류</span><select data-mapping-room>${rooms.map((item) => `<option value="${esc(item.id)}" ${item.id === state.selectedMappingRoomId ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><i>⌄</i></label><div class="mapping-toolbar-actions"><button class="secondary-button mapping-reset-button" data-mapping-reset>${icons.refresh}<span>기본값으로 되돌리기</span></button><button class="secondary-button mapping-default-info-button" type="button" data-mapping-default-info aria-label="기본값 안내" aria-expanded="${mappingDefaultInfoOpen}" aria-controls="mapping-default-info-panel" title="기본값 안내"><span aria-hidden="true">i</span></button></div></div>
+    ${mappingDefaultInfoOpen ? mappingDefaultInfoMarkup(room) : ''}
     <div class="mapping-grid-wrap"><div class="mapping-grid">
       <div class="mapping-column-heading mapping-occupancy-heading"><strong>판매 상황</strong><span>전체 ${roomTotal()}실 기준 <button data-mapping-edit-ranges>구간 수정</button></span></div>
       ${columns.map((column) => `<div class="mapping-column-heading ${mappingOpenCell?.category === column.id ? 'active-column' : ''}"><strong>${column.title}</strong>${column.subtitle ? `<span class="mapping-column-chip">${esc(column.subtitle)}</span>` : column.picker}</div>`).join('')}
@@ -1768,6 +1796,7 @@ app.addEventListener('click', (event) => {
     mappingOpenCell = null;
     mappingOpenSeasonCategory = '';
     mappingHelpOpen = false;
+    mappingDefaultInfoOpen = false;
     resetConfirmOpen = false;
     calendarSelectedDate = '';
     calendarPanelToast = '';
@@ -2008,7 +2037,12 @@ app.addEventListener('click', (event) => {
     return;
   }
   if (event.target.closest('[data-mapping-default-info]')) {
-    showToast('기본값은 설정 1~3단계(기본 정보·가격 단계·점유율 구간)의 결과를 바탕으로 채워져요.'); return;
+    mappingDefaultInfoOpen = !mappingDefaultInfoOpen;
+    mappingOpenCell = null;
+    mappingOpenSeasonCategory = '';
+    render();
+    if (mappingDefaultInfoOpen) document.querySelector('[data-mapping-default-info]')?.focus();
+    return;
   }
   if (event.target.closest('[data-mapping-reset]')) {
     const room = state.rooms.find((item) => item.id === state.selectedMappingRoomId);
@@ -2460,6 +2494,10 @@ document.addEventListener('click', (event) => {
     render();
   }
   let mappingChanged = false;
+  if (mappingDefaultInfoOpen && !event.target.closest('[data-mapping-default-info-panel]') && !event.target.closest('[data-mapping-default-info]')) {
+    mappingDefaultInfoOpen = false;
+    mappingChanged = true;
+  }
   if (mappingOpenCell && !event.target.closest('.mapping-cell-wrap')) {
     mappingOpenCell = null;
     mappingChanged = true;
@@ -2487,9 +2525,10 @@ document.addEventListener('keydown', (event) => {
     render();
     return;
   }
-  if (event.key === 'Escape' && (mappingOpenCell || mappingOpenSeasonCategory)) {
+  if (event.key === 'Escape' && (mappingOpenCell || mappingOpenSeasonCategory || mappingDefaultInfoOpen)) {
     mappingOpenCell = null;
     mappingOpenSeasonCategory = '';
+    mappingDefaultInfoOpen = false;
     render(); return;
   }
   if (event.key === 'Escape' && calendarOpen) { calendarOpen = false; calendarPendingStart = null; render(); return; }
