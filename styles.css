@@ -1088,7 +1088,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .market-room-trigger > strong { overflow: hidden; font-size: 15px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
 .market-room-trigger > small { color: #8994a7; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .market-room-count { margin-left: auto; color: #8994a7; font-size: 11px; white-space: nowrap; }
-.market-room-trigger > i, .market-radius-trigger > i { color: #667085; font-size: 14px; font-style: normal; }
+.market-room-trigger > i { color: #667085; font-size: 14px; font-style: normal; }
+.market-radius-trigger > i { color: #667085; font-size: 14px; font-style: normal; line-height: 1; transform: translateY(-2px); }
 .market-room-step > p { margin: 0; color: #788397; font-size: 11px; line-height: 1.55; }
 .market-divider { height: 1px; flex: 0 0 1px; margin: 10px 0 12px; background: #e8ebf1; }
 .market-step2-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
