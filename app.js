@@ -1275,7 +1275,7 @@ function topbar() {
   const property = selectedProperty();
   const options = PROPERTIES.map((item) => `<button class="property-option ${item.id === property.id ? 'selected' : ''}" role="option" aria-selected="${item.id === property.id}" data-property-option="${esc(item.id)}"><span class="property-option-icon">${icons.hotel}</span><span class="property-option-copy"><strong>${esc(item.name)}</strong><small>${item.type === 'demo' ? '데모 숙소 · 객실 샘플' : `호텔 · ${roomTotal()}실`}</small></span>${item.id === property.id ? '<span class="property-option-check">✓</span>' : ''}</button>`).join('');
   const breadcrumbs = state.view === 'calendar'
-    ? '<span>요금 관리 (RMS)</span><b>›</b><strong>가격 관리</strong>'
+    ? '<span>요금 관리 (RMS)</span><b>›</b><strong>판매 관리</strong>'
     : state.view === 'market'
     ? '<span>가격 관리</span><b>›</b><span>설정</span><b>›</b><strong>주변 시세</strong>'
     : '<span>요금 관리 (RMS)</span><b>›</b><strong>가격 설정</strong>';
