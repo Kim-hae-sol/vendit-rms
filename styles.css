@@ -1186,6 +1186,11 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .market-hint { min-height: 29px; display: flex; align-items: center; gap: 5px; margin: 0; padding: 4px 7px; color: var(--primary); font-size: 10px; font-weight: 600; }
 .market-hint span { font-size: 14px; }
 .market-table-scroll { min-height: 0; flex: 1 1 auto; display: flex; flex-direction: column; overflow: auto; border: 1px solid #e1e6ef; border-radius: 12px 12px 0 0; scrollbar-width: thin; scrollbar-color: #d4dbe7 transparent; }
+.market-list-panel:not(.expanded) { align-self: start; }
+.market-list-panel.expanded { align-self: stretch; overflow: visible; }
+.market-table-scroll:not(.expanded), .market-table-scroll.expanded { height: auto; max-height: none; flex: 0 0 auto; overflow: visible; }
+.market-card.expanded { min-height: 0; overflow: visible; }
+.market-workspace.expanded { min-height: 0; overflow: visible; }
 .market-table-scroll.market-results-refresh, .market-map-canvas.market-results-refresh { animation: market-results-enter .24s ease-out both; }
 @keyframes market-results-enter { from { opacity: .55; } to { opacity: 1; } }
 .market-table { width: 100%; flex: 0 0 auto; border-collapse: separate; border-spacing: 0; table-layout: fixed; text-align: left; }
@@ -1659,7 +1664,12 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .market-workspace { min-height: 0; flex: 1 1 0; overflow: hidden; }
   .market-list-panel { min-height: 0; overflow: hidden; }
   .market-table-scroll { height: 0; min-height: 0; max-height: none; flex: 1 1 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
-  .market-table-scroll.expanded { height: 0; min-height: 0; max-height: none; flex: 1 1 0; }
+  .market-list-panel:not(.expanded) { align-self: start; overflow: visible; }
+  .market-list-panel.expanded { overflow: visible; }
+  .market-table-scroll:not(.expanded) { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
+  .market-card.expanded, .page-scroll.market-scroll > .market-card.expanded { min-height: 0; flex: 0 0 auto; overflow: visible; }
+  .market-workspace.expanded { min-height: 510px; flex: 0 0 auto; overflow: visible; }
+  .market-table-scroll.expanded { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
 }
 
 /* Fixed desktop frame: the header, sidebar, and action bar stay put while page content scrolls. */
@@ -1699,7 +1709,12 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .page-scroll.market-scroll { gap: 8px; padding: 8px 22px 8px; }
   .page-scroll.market-scroll > .market-intro { min-height: 76px; flex: 0 0 76px; }
   .page-scroll.market-scroll > .market-card { min-height: 0; flex: 1 1 0; overflow: hidden; }
+  .page-scroll.market-scroll > .market-card.expanded { min-height: 0; flex: 0 0 auto; overflow: visible; }
   .main-content > .market-footer { height: 48px; min-height: 48px; flex-basis: 48px; }
+  .market-workspace.expanded { min-height: 510px; flex: 0 0 auto; overflow: visible; }
+  .market-list-panel:not(.expanded) { align-self: start; overflow: visible; }
+  .market-list-panel.expanded { overflow: visible; }
+  .market-table-scroll:not(.expanded), .market-table-scroll.expanded { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
   .page-scroll.calendar-scroll { gap: 8px; padding: 9px 22px 8px; }
   .page-scroll.calendar-scroll > .calendar-page-heading,
   .page-scroll.calendar-scroll > .calendar-toolbar { flex: 0 0 auto; }
@@ -1715,9 +1730,14 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .main-content.market-main > .page-scroll.market-scroll { min-width: 0; min-height: 0; display: flex; flex: 1 1 0; flex-direction: column; gap: 16px; overflow-x: hidden; overflow-y: auto; padding: 20px 32px 12px; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: #c5ccd8 transparent; touch-action: pan-y; }
   .page-scroll.market-scroll > .market-intro { min-height: 146px; flex: 0 0 146px; }
   .page-scroll.market-scroll > .market-card { min-height: 0; flex: 1 1 0; overflow: hidden; }
+  .page-scroll.market-scroll > .market-card.expanded { min-height: 0; flex: 0 0 auto; overflow: visible; }
   .market-workspace { min-height: 0; flex: 1 1 0; overflow: hidden; }
   .market-list-panel { min-height: 0; overflow: hidden; }
-  .market-table-scroll, .market-table-scroll.expanded { height: 0; min-height: 0; max-height: none; flex: 1 1 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+  .market-workspace.expanded { min-height: 510px; flex: 0 0 auto; overflow: visible; }
+  .market-list-panel:not(.expanded) { align-self: start; overflow: visible; }
+  .market-list-panel.expanded { overflow: visible; }
+  .market-table-scroll { height: 0; min-height: 0; max-height: none; flex: 1 1 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+  .market-table-scroll:not(.expanded), .market-table-scroll.expanded { height: auto; min-height: 0; max-height: none; flex: 0 0 auto; overflow: visible; }
   .main-content > .market-footer { height: 58px; min-height: 58px; flex: 0 0 58px; margin: 0 32px 14px; padding: 7px 16px; }
 }
 
