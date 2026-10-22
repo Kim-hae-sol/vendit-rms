@@ -1331,7 +1331,7 @@ function stageRows(type, { animate = true } = {}) {
     const extremeLabel = type === 'up' ? (index === 0 ? '<span class="extreme-badge">최고가</span>' : '<span class="extreme-spacer"></span>') : (index === values.length - 1 ? '<span class="extreme-badge">최저가</span>' : '<span class="extreme-spacer"></span>');
     return `<div class="stage-row ${type}" data-stage-row="${type}" data-stage-index="${index}">
       <span class="stage-swatch" style="--stage-swatch-color:${swatchColor}"></span><strong>${name}</strong>${extremeLabel}<span class="stage-price${priceRefreshClass}">${money(price)}</span>
-      <label class="percent-input"><input type="number" step="0.1" value="${pct}" aria-label="${name} 변동률" data-stage-pct="${type}" data-index="${index}" ${isLimitStage ? 'readonly' : ''}><span>%</span></label>
+      <label class="percent-input"><input type="number" step="1" value="${pct}" aria-label="${name} 변동률" data-stage-pct="${type}" data-index="${index}" ${isLimitStage ? 'readonly' : ''}><span>%</span></label>
       <button type="button" class="remove-stage" aria-label="${name} 삭제" data-remove-stage="${type}" data-index="${index}">×</button>
     </div>`;
   }).join('');
@@ -1398,6 +1398,58 @@ function refreshPriceStageCountView() {
 
   const note = document.querySelector('[data-stage-note]');
   if (note) note.textContent = stageLimitGuidance(model) || '단계를 더하거나 빼도 기준가와 반대 방향의 단계는 그대로 유지돼요.';
+
+  const chart = document.querySelector('.chart-wrap');
+  if (chart) chart.innerHTML = chartSvg({ animate: false });
+}
+
+function updateStagePercentInput(input) {
+  const type = input.dataset.stagePct;
+  const index = Number(input.dataset.index);
+  const nextPercent = input.valueAsNumber;
+  const currentModel = priceStageModel();
+  if (!['up', 'down'].includes(type) || !Number.isInteger(index) || index < 0
+    || index >= state[type].length || !Number.isFinite(nextPercent)) {
+    return { valid: false, changed: false };
+  }
+
+  const amount = calculateManualStagePrice(
+    currentModel.base,
+    nextPercent,
+    type,
+    currentModel.minPrice,
+    currentModel.maxPrice,
+  );
+  if (!Number.isFinite(amount)) return { valid: false, changed: false };
+  const priceKey = `${type}Prices`;
+  if (amount === currentModel[priceKey][index]) return { valid: true, changed: false };
+
+  const overrides = {
+    upPrices: Array(state.up.length).fill(0).map((_, position) => state.stagePriceOverrides.upPrices[position] ?? currentModel.upPrices[position]),
+    downPrices: Array(state.down.length).fill(0).map((_, position) => state.stagePriceOverrides.downPrices[position] ?? currentModel.downPrices[position]),
+  };
+  overrides[priceKey][index] = amount;
+  const model = calculatePriceStageModel(
+    currentModel.base,
+    state.minLimit,
+    state.maxLimit,
+    state.up.length,
+    state.down.length,
+    overrides,
+  );
+  if (!model.valid) return { valid: false, changed: false };
+
+  state.stagePriceOverrides = overrides;
+  state.up = model.up;
+  state.down = model.down;
+  return { valid: true, changed: true, type, index, model };
+}
+
+function refreshPriceStagePercentView(type, index, model = priceStageModel()) {
+  const row = document.querySelector(`[data-stage-row="${type}"][data-stage-index="${index}"]`);
+  const price = row?.querySelector('.stage-price');
+  if (price) price.textContent = integer(model[`${type}Prices`][index]);
+  document.querySelectorAll('.stage-price.price-refresh').forEach((item) => item.classList.remove('price-refresh'));
 
   const chart = document.querySelector('.chart-wrap');
   if (chart) chart.innerHTML = chartSvg({ animate: false });
@@ -2364,27 +2416,24 @@ app.addEventListener('change', (event) => {
     if (priceInput) priceInput.value = integer(room.basePrice);
     if (priceInput && room.id === state.previewRoomId) syncPriceStageValues();
   } else if (stagePercentInput) {
-    const type = stagePercentInput.dataset.stagePct;
-    const index = Number(stagePercentInput.dataset.index);
-    const nextPercent = stagePercentInput.valueAsNumber;
-    const currentModel = priceStageModel();
-    if (!['up', 'down'].includes(type) || !Number.isInteger(index) || index < 0 || index >= state[type].length || !Number.isFinite(nextPercent)) {
-      render(); return;
+    const { valid, changed, type, index } = updateStagePercentInput(stagePercentInput);
+    const model = priceStageModel();
+    if (!valid) {
+      if (['up', 'down'].includes(stagePercentInput.dataset.stagePct)) {
+        const fallbackType = stagePercentInput.dataset.stagePct;
+        const fallbackIndex = Number(stagePercentInput.dataset.index);
+        if (Number.isInteger(fallbackIndex) && model[fallbackType]?.[fallbackIndex] != null) {
+          stagePercentInput.value = model[fallbackType][fallbackIndex];
+        }
+      }
+      return;
     }
-    const amount = calculateManualStagePrice(currentModel.base, nextPercent, type, currentModel.minPrice, currentModel.maxPrice);
-    if (!Number.isFinite(amount)) { render(); return; }
-    const overrides = {
-      upPrices: Array(state.up.length).fill(null).map((_, position) => state.stagePriceOverrides.upPrices[position] ?? currentModel.upPrices[position]),
-      downPrices: Array(state.down.length).fill(null).map((_, position) => state.stagePriceOverrides.downPrices[position] ?? currentModel.downPrices[position]),
-    };
-    overrides[`${type}Prices`][index] = amount;
-    const model = calculatePriceStageModel(currentModel.base, state.minLimit, state.maxLimit, state.up.length, state.down.length, overrides);
-    if (!model.valid) {
-      render(); showToast('단계 금액을 현재 한도 안에서 확인해 주세요.'); return;
+    if (changed) {
+      save();
+      refreshPriceStagePercentView(type, index, model);
     }
-    state.stagePriceOverrides = overrides;
-    state.up = model.up;
-    state.down = model.down;
+    stagePercentInput.value = model[type][index];
+    return;
   } else if (limitInput) {
     const key = limitInput.dataset.limit === 'min' ? 'minLimit' : 'maxLimit';
     const value = Number(limitInput.value);
@@ -2418,6 +2467,15 @@ app.addEventListener('change', (event) => {
 });
 
 app.addEventListener('input', (event) => {
+  const stagePercentInput = event.target.closest('[data-stage-pct]');
+  if (stagePercentInput) {
+    const result = updateStagePercentInput(stagePercentInput);
+    if (result.valid && result.changed) {
+      save();
+      refreshPriceStagePercentView(result.type, result.index, result.model);
+    }
+    return;
+  }
   const directPriceInput = event.target.closest('[data-direct-price]');
   if (directPriceInput) { calendarPriceDraft = directPriceInput.value.replace(/[^\d]/g, ''); return; }
   const marketRoomSearch = event.target.closest('[data-market-room-search]');
