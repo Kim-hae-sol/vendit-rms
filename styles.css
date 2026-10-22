@@ -230,10 +230,9 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .stage-controls > strong { font-size: 12px; font-weight: 700; white-space: nowrap; }
 .stage-controls > strong:not(:first-child) { margin-left: 7px; }
 .step-counter { width: 78px; height: 34px; display: flex; align-items: center; justify-content: space-around; border: 1px solid var(--border-input); border-radius: 8px; background: #fff; }
-.step-counter button { width: 25px; height: 30px; border: 0; background: transparent; color: #344054; font-size: 17px; cursor: pointer; transition: color .14s ease, transform .14s ease; }
-.step-counter button:active:not(:disabled) { transform: scale(.88); }
+.step-counter button { flex: 1 1 0; min-width: 0; width: auto; height: 100%; padding: 0; display: grid; place-items: center; border: 0; background: transparent; color: #344054; font-size: 17px; cursor: pointer; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; transition: color .14s ease; }
 .step-counter button:disabled { color: #c4cad4; cursor: not-allowed; }
-.step-counter span { min-width: 16px; text-align: center; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.step-counter span { flex: 0 0 16px; min-width: 16px; text-align: center; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .total-stages { margin-left: 1px; color: #929baa; font-size: 12px; white-space: nowrap; }
 .stage-workspace { display: grid; grid-template-columns: minmax(0, 1.06fr) minmax(380px, 1fr); gap: 18px; align-items: stretch; }
 .stage-editor { min-width: 0; border: 1px solid var(--border); border-radius: 11px; overflow: hidden; }
@@ -241,10 +240,6 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .up-heading { color: var(--primary); }
 .down-heading { color: var(--primary); }
 .stage-row { min-height: 40px; display: grid; grid-template-columns: 18px minmax(62px, 1fr) auto 74px 80px 18px; align-items: center; gap: 7px; padding: 4px 11px; border-top: 1px solid #eef0f4; background: #fff; transition: background .12s ease; }
-.stage-row.count-highlight.up { animation: stage-up-row-highlight .68s ease-out both; }
-.stage-row.count-highlight.down { animation: stage-down-row-highlight .68s ease-out both; }
-@keyframes stage-up-row-highlight { 0%, 100% { background: #fff; } 30% { background: #fff0f0; } }
-@keyframes stage-down-row-highlight { 0%, 100% { background: #fff; } 30% { background: #eef3ff; } }
 .stage-swatch { width: 17px; height: 13px; display: inline-block; border-radius: 5px; background: #f2f3f6; }
 .stage-row .stage-swatch { background: var(--stage-swatch-color, #f2f3f6); }
 .stage-row strong { color: var(--blue); font-size: 12px; font-weight: 700; white-space: nowrap; }
@@ -252,7 +247,8 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .stage-row.down strong { color: var(--blue); }
 .extreme-badge { display: inline-flex; align-items: center; justify-content: center; padding: 3px 7px; border-radius: 7px; color: #596274; background: #eef0f4; font-size: 10px; white-space: nowrap; }
 .extreme-spacer { width: 1px; }
-.stage-price { color: #737e90; font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; animation: stage-price-refresh .16s ease-out both; }
+.stage-price { color: #737e90; font-size: 11px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.stage-price.price-refresh { animation: stage-price-refresh .16s ease-out both; }
 @keyframes stage-price-refresh { from { opacity: .45; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
 .percent-input { height: 32px; display: flex; align-items: center; border: 1px solid var(--border-input); border-radius: 8px; background: #fff; }
 .percent-input:focus-within { border-color: #aabdf5; box-shadow: 0 0 0 3px #e3ebff; }
@@ -287,18 +283,12 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .svg-label.base { fill: #374151; }
 .svg-price { fill: #111827; font-family: inherit; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .svg-price.base { font-size: 12px; }
-.svg-price:not(.base) { animation: stage-price-refresh .16s ease-out both; }
-.svg-price.count-highlight.up { animation: stage-price-refresh .16s ease-out both, stage-up-value-highlight .68s ease-out both; }
-.svg-price.count-highlight.down { animation: stage-price-refresh .16s ease-out both, stage-down-value-highlight .68s ease-out both; }
-@keyframes stage-up-value-highlight { 0%, 100% { fill: #111827; } 30% { fill: #e03131; } }
-@keyframes stage-down-value-highlight { 0%, 100% { fill: #111827; } 30% { fill: #2f6bff; } }
-.svg-bar.up { fill: #f9b9b9; transform-box: fill-box; transform-origin: left center; animation: stage-bar-refresh .2s ease-out both; }
-.svg-bar.down { fill: #bfd1ff; transform-box: fill-box; transform-origin: right center; animation: stage-bar-refresh .2s ease-out both; }
-.svg-bar.count-highlight.up { animation: stage-bar-refresh .2s ease-out both, stage-up-bar-highlight .68s ease-out both; }
-.svg-bar.count-highlight.down { animation: stage-bar-refresh .2s ease-out both, stage-down-bar-highlight .68s ease-out both; }
+.svg-price.refresh:not(.base) { animation: stage-price-refresh .16s ease-out both; }
+.svg-bar.up { fill: #f9b9b9; transform-box: fill-box; transform-origin: left center; }
+.svg-bar.down { fill: #bfd1ff; transform-box: fill-box; transform-origin: right center; }
+.svg-bar.up.refresh { animation: stage-bar-refresh .2s ease-out both; }
+.svg-bar.down.refresh { animation: stage-bar-refresh .2s ease-out both; }
 @keyframes stage-bar-refresh { from { opacity: .45; transform: scaleX(.92); } to { opacity: 1; transform: scaleX(1); } }
-@keyframes stage-up-bar-highlight { 0%, 100% { filter: none; } 30% { filter: drop-shadow(0 0 5px rgba(224, 49, 49, .55)); } }
-@keyframes stage-down-bar-highlight { 0%, 100% { filter: none; } 30% { filter: drop-shadow(0 0 5px rgba(47, 107, 255, .55)); } }
 .limit-line { stroke: #e03131; stroke-width: 1.5; stroke-dasharray: 4 4; }
 .zero-line { stroke: #b8c0cd; stroke-width: 1.2; }
 .axis-line { stroke: #e1e5ec; stroke-width: 1; }

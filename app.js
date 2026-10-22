@@ -248,8 +248,6 @@ let marketRoomMenuOpen = false;
 let marketRoomSearchQuery = '';
 let marketRadiusMenuOpen = false;
 let marketSearchQuery = '';
-let stageCountHighlight = null;
-let stageCountHighlightTimer;
 let marketResultsRefreshing = false;
 let marketResultsRefreshTimer;
 const money = (amount) => `${Math.round(Number(amount) || 0).toLocaleString('ko-KR')}원`;
@@ -264,14 +262,6 @@ const averagePrice = () => {
 };
 const stagePrice = window.VenditPriceStages.calculateStagePrice;
 const calculateManualStagePrice = window.VenditPriceStages.calculateManualStagePrice;
-function highlightChangedPriceStage(type) {
-  const count = state[type]?.length || 0;
-  stageCountHighlight = count ? { type, index: type === 'up' ? count - 1 : 0 } : null;
-  window.clearTimeout(stageCountHighlightTimer);
-  stageCountHighlightTimer = window.setTimeout(() => {
-    document.querySelectorAll('.count-highlight').forEach((element) => element.classList.remove('count-highlight'));
-  }, 720);
-}
 function animateMarketResults() {
   marketResultsRefreshing = true;
   window.clearTimeout(marketResultsRefreshTimer);
@@ -356,7 +346,6 @@ function step2ValidationErrors() {
     ...downStages.map((pct, index) => ({ type: 'down', pct: Number(pct), price: model.downPrices[index], name: `내리는 ${index + 1}단계` })),
   ];
   const validStages = stages.every(({ type, pct }) => Number.isFinite(pct)
-    && Number.isInteger(pct)
     && (type === 'up' ? pct > 0 : pct < 0)
     && limitsValid && pct >= min && pct <= max);
   if (!validStages) errors.push('가격 단계가 최저·최고 한도 안에 있는지 확인해 주세요.');
@@ -1329,7 +1318,7 @@ function step1Content() {
   </section>`;
 }
 
-function stageRows(type) {
+function stageRows(type, { animate = true } = {}) {
   const model = priceStageModel();
   const values = type === 'up' ? model.up : model.down;
   const prices = type === 'up' ? model.upPrices : model.downPrices;
@@ -1337,13 +1326,13 @@ function stageRows(type) {
     const name = priceStageName(type, index);
     const price = prices[index] || 0;
     const swatchColor = stageSwatchColor(type, index, values.length);
-    const isCountHighlight = stageCountHighlight?.type === type && stageCountHighlight.index === index;
     const isLimitStage = type === 'up' ? index === 0 : index === values.length - 1;
+    const priceRefreshClass = animate ? ' price-refresh' : '';
     const extremeLabel = type === 'up' ? (index === 0 ? '<span class="extreme-badge">최고가</span>' : '<span class="extreme-spacer"></span>') : (index === values.length - 1 ? '<span class="extreme-badge">최저가</span>' : '<span class="extreme-spacer"></span>');
-    return `<div class="stage-row ${type}${isCountHighlight ? ' count-highlight' : ''}" data-stage-row="${type}" data-stage-index="${index}">
-      <span class="stage-swatch" style="--stage-swatch-color:${swatchColor}"></span><strong>${name}</strong>${extremeLabel}<span class="stage-price">${money(price)}</span>
+    return `<div class="stage-row ${type}" data-stage-row="${type}" data-stage-index="${index}">
+      <span class="stage-swatch" style="--stage-swatch-color:${swatchColor}"></span><strong>${name}</strong>${extremeLabel}<span class="stage-price${priceRefreshClass}">${money(price)}</span>
       <label class="percent-input"><input type="number" step="0.1" value="${pct}" aria-label="${name} 변동률" data-stage-pct="${type}" data-index="${index}" ${isLimitStage ? 'readonly' : ''}><span>%</span></label>
-      <button class="remove-stage" aria-label="${name} 삭제" data-remove-stage="${type}" data-index="${index}">×</button>
+      <button type="button" class="remove-stage" aria-label="${name} 삭제" data-remove-stage="${type}" data-index="${index}">×</button>
     </div>`;
   }).join('');
 }
@@ -1378,7 +1367,43 @@ function statusBanner() {
   return `<div class="invalid-banner" role="alert"><span>!</span> ${esc(step2ValidationErrors()[0])}</div>`;
 }
 
-function chartSvg() {
+function stageLimitGuidance(model = priceStageModel()) {
+  const upAtLimit = state.up.length >= model.upMaxCount;
+  const downAtLimit = state.down.length >= model.downMaxCount;
+  return [
+    upAtLimit ? `올리는 단계: 현재 한도 범위에서는 최대 ${model.upMaxCount}단계까지 만들 수 있어요.` : '',
+    downAtLimit ? `내리는 단계: 현재 한도 범위에서는 최대 ${model.downMaxCount}단계까지 만들 수 있어요.` : '',
+  ].filter(Boolean).join(' ');
+}
+
+function refreshPriceStageCountView() {
+  const model = priceStageModel();
+  ['up', 'down'].forEach((type) => {
+    const counter = document.querySelector(`[data-stage-counter="${type}"]`);
+    if (!counter) return;
+    const count = state[type].length;
+    counter.querySelector('[data-stage-count-value]').textContent = count;
+    counter.querySelector('[data-count-step][data-delta="-1"]').disabled = count <= MIN_PRICE_STEPS;
+    counter.querySelector('[data-count-step][data-delta="1"]').disabled = count >= model[`${type}MaxCount`];
+
+    const rows = document.querySelector(`[data-stage-rows="${type}"]`);
+    if (rows) rows.innerHTML = stageRows(type, { animate: false });
+  });
+
+  const total = document.querySelector('.total-stages');
+  if (total) total.textContent = `기준가 포함 ${state.up.length + state.down.length + 1}개`;
+
+  const status = document.querySelector('[data-stage-status]');
+  if (status) status.innerHTML = statusBanner();
+
+  const note = document.querySelector('[data-stage-note]');
+  if (note) note.textContent = stageLimitGuidance(model) || '단계를 더하거나 빼도 기준가와 반대 방향의 단계는 그대로 유지돼요.';
+
+  const chart = document.querySelector('.chart-wrap');
+  if (chart) chart.innerHTML = chartSvg({ animate: false });
+}
+
+function chartSvg({ animate = true } = {}) {
   const room = selectedRoom();
   if (!room) return '<div class="chart-empty">객실 정보가 없어요.</div>';
   const model = priceStageModel();
@@ -1407,9 +1432,8 @@ function chartSvg() {
       const name = priceStageName(item.type, item.index);
       const valueX = item.type === 'up' ? endX + 7 : endX - 7;
       const anchor = item.type === 'up' ? 'start' : 'end';
-      const isCountHighlight = stageCountHighlight?.type === item.type && stageCountHighlight.index === item.index;
-      const highlightClass = isCountHighlight ? ' count-highlight' : '';
-      rows.push(`<text x="14" y="${y + 20}" class="svg-label ${colorClass}">${name}</text><rect x="${rectX}" y="${y}" width="${barWidth}" height="${barH}" rx="5" class="svg-bar ${colorClass}${highlightClass}"/><text x="${valueX}" y="${y + 20}" text-anchor="${anchor}" class="svg-price ${colorClass}${highlightClass}">${integer(item.price)}</text>`);
+      const refreshClass = animate ? ' refresh' : '';
+      rows.push(`<text x="14" y="${y + 20}" class="svg-label ${colorClass}">${name}</text><rect x="${rectX}" y="${y}" width="${barWidth}" height="${barH}" rx="5" class="svg-bar ${colorClass}${refreshClass}"/><text x="${valueX}" y="${y + 20}" text-anchor="${anchor}" class="svg-price ${colorClass}${refreshClass}">${integer(item.price)}</text>`);
     }
   });
   const graphBottom = rowTop + allRows.length * rowGap - 9;
@@ -1431,12 +1455,7 @@ function step2Content() {
   const valid = stageValidity();
   const low = room && model.valid ? model.minPrice : 0;
   const high = room && model.valid ? model.maxPrice : 0;
-  const upAtLimit = state.up.length >= model.upMaxCount;
-  const downAtLimit = state.down.length >= model.downMaxCount;
-  const limitGuidance = [
-    upAtLimit ? `올리는 단계: 현재 한도 범위에서는 최대 ${model.upMaxCount}단계까지 만들 수 있어요.` : '',
-    downAtLimit ? `내리는 단계: 현재 한도 범위에서는 최대 ${model.downMaxCount}단계까지 만들 수 있어요.` : '',
-  ].filter(Boolean).join(' ');
+  const limitGuidance = stageLimitGuidance(model);
   return `<div class="question-card q1-card">
     <div class="question-heading"><span class="q-badge">Q1</span><div><h2>가장 싸게, 가장 비싸게 얼마까지 받을 수 있나요?</h2><p>손해 보지 않는 최저선과 손님이 납득할 최고선이에요. 어떤 단계도 이 범위를 넘을 수 없어요.</p></div></div>
     <div class="limits-row">
@@ -1449,19 +1468,19 @@ function step2Content() {
   <div class="question-card q2-card">
     <div class="question-heading q2-heading"><span class="q-badge">Q2</span><div><h2>기준가 위·아래로 몇 단계씩 둘까요?</h2><p>각 방향의 단계는 해당 한도까지 같은 간격으로 나눠요. 위·아래 단계 수는 따로 조절할 수 있어요.</p></div></div>
     <div class="stage-controls">
-      <strong>올리는 단계</strong><div class="step-counter"><button data-count-step="up" data-delta="-1" aria-label="올리는 단계 줄이기" ${state.up.length <= MIN_PRICE_STEPS ? 'disabled' : ''}>−</button><span>${state.up.length}</span><button data-count-step="up" data-delta="1" aria-label="올리는 단계 늘리기" ${state.up.length >= model.upMaxCount ? 'disabled' : ''}>+</button></div>
-      <strong>내리는 단계</strong><div class="step-counter"><button data-count-step="down" data-delta="-1" aria-label="내리는 단계 줄이기" ${state.down.length <= MIN_PRICE_STEPS ? 'disabled' : ''}>−</button><span>${state.down.length}</span><button data-count-step="down" data-delta="1" aria-label="내리는 단계 늘리기" ${state.down.length >= model.downMaxCount ? 'disabled' : ''}>+</button></div>
+      <strong>올리는 단계</strong><div class="step-counter" data-stage-counter="up"><button type="button" data-count-step="up" data-delta="-1" aria-label="올리는 단계 줄이기" ${state.up.length <= MIN_PRICE_STEPS ? 'disabled' : ''}>−</button><span data-stage-count-value>${state.up.length}</span><button type="button" data-count-step="up" data-delta="1" aria-label="올리는 단계 늘리기" ${state.up.length >= model.upMaxCount ? 'disabled' : ''}>+</button></div>
+      <strong>내리는 단계</strong><div class="step-counter" data-stage-counter="down"><button type="button" data-count-step="down" data-delta="-1" aria-label="내리는 단계 줄이기" ${state.down.length <= MIN_PRICE_STEPS ? 'disabled' : ''}>−</button><span data-stage-count-value>${state.down.length}</span><button type="button" data-count-step="down" data-delta="1" aria-label="내리는 단계 늘리기" ${state.down.length >= model.downMaxCount ? 'disabled' : ''}>+</button></div>
       <span class="total-stages">기준가 포함 ${state.up.length + state.down.length + 1}개</span>
     </div>
     <div class="stage-workspace">
       <section class="stage-editor" aria-label="가격 단계 편집">
         <div class="direction-heading up-heading">▲ 기준가보다 높게 · 손님이 몰릴 때</div>
-        ${stageRows('up')}
+        <div class="stage-rows" data-stage-rows="up">${stageRows('up')}</div>
         <div class="base-row"><span class="stage-swatch"></span><div><strong>기준가</strong><small>기본 정보에서 정한 평소 가격 · 모든 단계의 출발점</small></div><strong class="base-price">${money(room?.basePrice || 0)}</strong><span class="base-pct">0%</span></div>
         <div class="direction-heading down-heading">▼ 기준가보다 낮게 · 손님이 적을 때</div>
-        ${stageRows('down')}
-        ${statusBanner()}
-        <p class="editor-note">${limitGuidance || '단계를 더하거나 빼도 기준가와 반대 방향의 단계는 그대로 유지돼요.'}</p>
+        <div class="stage-rows" data-stage-rows="down">${stageRows('down')}</div>
+        <div data-stage-status>${statusBanner()}</div>
+        <p class="editor-note" data-stage-note>${limitGuidance || '단계를 더하거나 빼도 기준가와 반대 방향의 단계는 그대로 유지돼요.'}</p>
       </section>
       <section class="chart-card" aria-label="가격 단계 미리보기">
         <div class="chart-heading"><h3>기준가에서 얼마나 움직이나요?</h3><p>가운데 선이 기준가예요.<br>오른쪽은 올린 가격, 왼쪽은 내린 가격이에요.</p></div>
@@ -1735,7 +1754,6 @@ function render() {
   const fixedFooter = isMarket ? marketFooter() : isCalendar ? '' : footer();
   const scrollClass = isMarket ? 'market-scroll' : isCalendar ? 'calendar-scroll' : '';
   app.innerHTML = `<div class="shell ${isMarket ? 'market-shell' : ''}">${sidebar(animateStep, animateCompletion)}<div class="main-column ${isMarket ? 'market-main-column' : ''}">${topbar()}<main class="main-content ${isMarket ? 'market-main' : ''} ${isCalendar ? 'calendar-main' : ''} ${animateStep ? 'step-enter' : ''} ${animatePage ? 'page-enter' : ''}"><div class="page-scroll ${scrollClass}">${pageContent}</div>${fixedFooter}</main></div></div>${!isMarket && !isCalendar && state.step === 4 ? seasonOverlays() : ''}${resetConfirmDialog()}`;
-  stageCountHighlight = null;
   marketResultsRefreshing = false;
   if (preserveScroll) {
     const pageScroll = document.querySelector('.page-scroll');
@@ -1756,9 +1774,33 @@ function updateCountStep(type, delta) {
   const capacity = calculatePriceStageModel(stageBasePrice(), state.minLimit, state.maxLimit, 0, 0);
   const maximum = type === 'up' ? capacity.upMaxCount : capacity.downMaxCount;
   const nextCount = Math.max(MIN_PRICE_STEPS, Math.min(maximum, state[type].length + delta));
-  if (nextCount === state[type].length) return;
-  state[type] = Array(nextCount).fill(0);
-  syncPriceStageValues();
+  if (nextCount === state[type].length) return false;
+
+  const nextUpCount = type === 'up' ? nextCount : state.up.length;
+  const nextDownCount = type === 'down' ? nextCount : state.down.length;
+  const currentModel = priceStageModel();
+  if (!currentModel.valid) return false;
+
+  // Resizing one direction redistributes only that side. Keep the other
+  // direction's current prices, including manual edits, unchanged.
+  const overrides = {
+    upPrices: type === 'up' ? [] : currentModel.upPrices,
+    downPrices: type === 'down' ? [] : currentModel.downPrices,
+  };
+  const model = calculatePriceStageModel(
+    currentModel.base,
+    state.minLimit,
+    state.maxLimit,
+    nextUpCount,
+    nextDownCount,
+    overrides,
+  );
+  if (!model.valid) return false;
+
+  state.up = model.up;
+  state.down = model.down;
+  state.stagePriceOverrides = overrides;
+  return true;
 }
 
 app.addEventListener('click', (event) => {
@@ -2202,17 +2244,16 @@ app.addEventListener('click', (event) => {
   const counter = event.target.closest('[data-count-step]');
   if (counter && !counter.disabled) {
     const type = counter.dataset.countStep;
-    const previousCount = state[type]?.length;
-    updateCountStep(type, Number(counter.dataset.delta));
-    if (state[type]?.length !== previousCount) highlightChangedPriceStage(type);
-    save(); render(); return;
+    const updated = updateCountStep(type, Number(counter.dataset.delta));
+    if (!updated) return;
+    save(); refreshPriceStageCountView(); return;
   }
   const removeStage = event.target.closest('[data-remove-stage]');
   if (removeStage) {
     const type = removeStage.dataset.removeStage;
     if (!['up', 'down'].includes(type) || !state[type].length) return;
-    state[type] = Array(Math.max(0, state[type].length - 1)).fill(0);
-    syncPriceStageValues(); save(); render(); return;
+    if (!updateCountStep(type, -1)) return;
+    save(); refreshPriceStageCountView(); return;
   }
   if (event.target.closest('[data-guide]')) { event.preventDefault(); showToast('이 프로토타입에서는 기본 정보와 가격 단계만 제공해요.'); }
 });
